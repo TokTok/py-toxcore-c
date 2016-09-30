@@ -6,27 +6,21 @@ cache:
     - $HOME/cache
 
 python:
-#  - "2.6"
+  - "2.6"
   - "2.7"
-#  - "3.2"
-#  - "3.3"
-#  - "3.4"
-#  - "3.5"
-
-compiler:
-#  - gcc
-  - clang
-
-env:
-  - FORK=iphydf BRANCH=logger
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
 
 addons: {apt: {packages: [yasm]}}
 
 before_script:
-  - export CFLAGS="-I$HOME/cache/usr/include"
-  - export LDFLAGS="-L$HOME/cache/usr/lib"
-  - export LD_LIBRARY_PATH="$HOME/cache/usr/lib"
-  - export PKG_CONFIG_PATH="$HOME/cache/usr/lib/pkgconfig"
+  - export CACHE_DIR="$HOME/cache"
+  - export CFLAGS="-I$CACHE_DIR/usr/include"
+  - export LDFLAGS="-L$CACHE_DIR/usr/lib"
+  - export LD_LIBRARY_PATH="$CACHE_DIR/usr/lib"
+  - export PKG_CONFIG_PATH="$CACHE_DIR/usr/lib/pkgconfig"
   - tools/install-deps.sh > /dev/null
 
 script:
