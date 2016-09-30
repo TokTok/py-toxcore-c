@@ -1,0 +1,63 @@
+#!/bin/sh
+
+set -eux
+
+CACHE_DIR="$HOME/cache"
+
+# installing libsodium, needed for toxcore
+if ! [ -d libsodium ]; then
+  git clone --depth=1 --branch=1.0.3 https://github.com/jedisct1/libsodium.git
+fi
+cd libsodium
+git rev-parse HEAD > libsodium.sha
+if ! ([ -f "$CACHE_DIR/libsodium.sha" ] && diff "$CACHE_DIR/libsodium.sha" libsodium.sha); then
+  ./autogen.sh
+  ./configure --prefix="$CACHE_DIR/usr"
+  make -j`nproc`
+  make install
+  mv libsodium.sha "$CACHE_DIR/libsodium.sha"
+fi
+cd ..
+rm -rf libsodium
+
+# installing libopus, needed for audio encoding/decoding
+if ! [ -f $CACHE_DIR/usr/lib/pkgconfig/opus.pc ]; then
+  curl http://downloads.xiph.org/releases/opus/opus-1.1.tar.gz -o opus-1.1.tar.gz
+  tar xzf opus-1.1.tar.gz
+  cd opus-1.1
+  ./configure --prefix=$HOME/cache/usr
+  make -j`nproc`
+  make install
+  cd ..
+  rm -rf opus-1.1*
+fi
+
+# installing vpx
+if ! [ -d libsodium ]; then
+  git clone --depth=1 https://chromium.googlesource.com/webm/libvpx
+fi
+cd libvpx
+git rev-parse HEAD > libvpx.sha
+if ! ([ -f "$CACHE_DIR/libvpx.sha" ] && diff "$CACHE_DIR/libvpx.sha" libvpx.sha); then
+  ./configure --prefix=$HOME/cache/usr --enable-shared
+  make -j`nproc`
+  make install
+  mv libvpx.sha "$CACHE_DIR/libvpx.sha"
+fi
+cd ..
+rm -rf libvpx
+
+# creating librarys' links and updating cache
+if ! [ -d toxcore ]; then
+  git clone --depth=1 --branch=$BRANCH https://github.com/$FORK/toxcore.git toxcore
+fi
+cd toxcore
+git rev-parse HEAD > toxcore.sha
+if ! ([ -f "$CACHE_DIR/toxcore.sha" ] && diff "$CACHE_DIR/toxcore.sha" toxcore.sha); then
+  cmake -B_build -H. -DCMAKE_INSTALL_PREFIX:PATH=$HOME/cache/usr
+  make -C_build -j`nproc`
+  make -C_build install
+  mv toxcore.sha "$CACHE_DIR/toxcore.sha"
+fi
+cd ..
+rm -rf toxcore
