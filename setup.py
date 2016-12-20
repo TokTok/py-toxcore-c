@@ -1,10 +1,13 @@
+import os
+
 from distutils.core import setup, Extension
 from subprocess import Popen, PIPE
-
 
 def supports_av():
     h = Popen("ld $LDFLAGS -ltoxav", shell=True, stderr=PIPE)
     out, err = h.communicate()
+    if os.path.exists("a.out"):
+        os.remove("a.out")
     return 'toxav' not in str(err)
 
 sources = ["pytox/pytox.c", "pytox/core.c", "pytox/util.c"]
