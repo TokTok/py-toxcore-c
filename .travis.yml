@@ -27,3 +27,10 @@ before_script:
 script:
   - pip install .
   - python tests/tests.py
+
+branches:
+  only:
+    - master
+
+git:
+  depth: 1
