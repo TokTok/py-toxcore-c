@@ -20,7 +20,7 @@ rm -rf libsodium
 
 # install libopus, needed for audio encoding/decoding
 if ! [ -f $CACHE_DIR/usr/lib/pkgconfig/opus.pc ]; then
-  curl http://downloads.xiph.org/releases/opus/opus-1.1.tar.gz -o opus-1.1.tar.gz
+  curl -L https://downloads.xiph.org/releases/opus/opus-1.1.tar.gz -o opus-1.1.tar.gz
   tar xzf opus-1.1.tar.gz
   cd opus-1.1
   ./configure --prefix=$CACHE_DIR/usr

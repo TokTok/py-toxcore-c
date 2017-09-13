@@ -17,7 +17,7 @@ RUN git clone https://github.com/jedisct1/libsodium.git
 RUN cd libsodium && git checkout tags/1.0.3 && ./autogen.sh && ./configure --prefix=/usr && make && make install
 
 # installing libopus, needed for audio encoding/decoding
-RUN wget http://downloads.xiph.org/releases/opus/opus-1.1.tar.gz
+RUN wget https://downloads.xiph.org/releases/opus/opus-1.1.tar.gz
 RUN tar xzf opus-1.1.tar.gz
 RUN cd opus-1.1 && ./configure && make && make install
 
