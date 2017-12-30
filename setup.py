@@ -4,26 +4,17 @@ from distutils.core import setup, Extension
 from subprocess import Popen, PIPE
 
 def supports_av():
-    h = Popen("ld $LDFLAGS -ltoxav", shell=True, stderr=PIPE)
+    h = Popen("echo 'extern int toxav_new(); int (*x)() = &toxav_new;' | cc $LDFLAGS -ltoxcore -xc -", shell=True, stderr=PIPE)
     out, err = h.communicate()
     if os.path.exists("a.out"):
         os.remove("a.out")
-    return 'toxav' not in str(err)
+    return "toxav" not in str(err)
 
 sources = ["pytox/pytox.c", "pytox/core.c", "pytox/util.c"]
 libraries = [
   "opus",
   "sodium",
   "toxcore",
-  "toxcrypto",
-  "toxdht",
-  "toxdns",
-  "toxencryptsave",
-  "toxfriends",
-  "toxgroup",
-  "toxmessenger",
-  "toxnetcrypto",
-  "toxnetwork",
   "vpx",
 ]
 cflags = [
@@ -37,7 +28,6 @@ cflags = [
 ]
 
 if supports_av():
-    libraries.append("toxav")
     sources.append("pytox/av.c")
     cflags.append("-DENABLE_AV")
 else:
@@ -46,11 +36,11 @@ else:
 setup(
     name="PyTox",
     version="0.0.23",
-    description='Python binding for Tox the skype replacement',
-    author='Wei-Ning Huang (AZ)',
-    author_email='aitjcize@gmail.com',
-    url='http://github.com/aitjcize/PyTox',
-    license='GPL',
+    description="Python binding for Tox the skype replacement",
+    author="Wei-Ning Huang (AZ)",
+    author_email="aitjcize@gmail.com",
+    url="http://github.com/aitjcize/PyTox",
+    license="GPL",
     ext_modules=[
         Extension(
             "pytox",
