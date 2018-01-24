@@ -49,11 +49,19 @@ ToxAVCore_callback_call_state(ToxAV *toxAV, uint32_t friend_number, uint32_t sta
 }
 
 static void
-ToxAVCore_callback_bit_rate_status(ToxAV *toxAV, uint32_t friend_number,
-                                   uint32_t audio_bit_rate, uint32_t video_bit_rate, void *self)
+ToxAVCore_callback_audio_bit_rate(ToxAV *toxAV, uint32_t friend_number,
+                                  uint32_t audio_bit_rate, void *self)
 {
-    PyObject_CallMethod((PyObject*)self, "on_bit_rate_status", "iii",
-                        friend_number, audio_bit_rate, video_bit_rate);
+    PyObject_CallMethod((PyObject*)self, "on_audio_bit_rate", "ii",
+                        friend_number, audio_bit_rate);
+}
+
+static void
+ToxAVCore_callback_video_bit_rate(ToxAV *toxAV, uint32_t friend_number,
+                                  uint32_t video_bit_rate, void *self)
+{
+    PyObject_CallMethod((PyObject*)self, "on_video_bit_rate", "ii",
+                        friend_number, video_bit_rate);
 }
 
 static void
@@ -298,7 +306,8 @@ static int init_helper(ToxAVCore *self, PyObject* args)
 
     toxav_callback_call(self->av, ToxAVCore_callback_call, self);
     toxav_callback_call_state(self->av, ToxAVCore_callback_call_state, self);
-    toxav_callback_bit_rate_status(self->av, ToxAVCore_callback_bit_rate_status, self);
+    toxav_callback_audio_bit_rate(self->av, ToxAVCore_callback_audio_bit_rate, self);
+    toxav_callback_video_bit_rate(self->av, ToxAVCore_callback_video_bit_rate, self);
     toxav_callback_audio_receive_frame(self->av, ToxAVCore_callback_audio_receive_frame, self);
     toxav_callback_video_receive_frame(self->av, ToxAVCore_callback_video_receive_frame, self);
 
@@ -387,18 +396,36 @@ ToxAVCore_call_control(ToxAVCore *self, PyObject* args)
 }
 
 static PyObject*
-ToxAVCore_bit_rate_set(ToxAVCore *self, PyObject* args)
+ToxAVCore_audio_set_bit_rate(ToxAVCore *self, PyObject* args)
 {
     uint32_t friend_number;
     int32_t audio_bit_rate;
-    int32_t video_bit_rate;
 
-    if (!PyArg_ParseTuple(args, "iii", &friend_number, &audio_bit_rate, &video_bit_rate)) {
+    if (!PyArg_ParseTuple(args, "ii", &friend_number, &audio_bit_rate)) {
         return NULL;
     }
 
     TOXAV_ERR_BIT_RATE_SET err = 0;
-    bool ret = toxav_bit_rate_set(self->av, friend_number, audio_bit_rate, video_bit_rate, &err);
+    bool ret = toxav_audio_set_bit_rate(self->av, friend_number, audio_bit_rate, &err);
+    if (ret == false) {
+        PyErr_Format(ToxOpError, "toxav bit rate set error: %d", err);
+        return NULL;
+    }
+    return PyBool_FromLong(ret);
+}
+
+static PyObject*
+ToxAVCore_video_set_bit_rate(ToxAVCore *self, PyObject* args)
+{
+    uint32_t friend_number;
+    int32_t video_bit_rate;
+
+    if (!PyArg_ParseTuple(args, "ii", &friend_number, &video_bit_rate)) {
+        return NULL;
+    }
+
+    TOXAV_ERR_BIT_RATE_SET err = 0;
+    bool ret = toxav_video_set_bit_rate(self->av, friend_number, video_bit_rate, &err);
     if (ret == false) {
         PyErr_Format(ToxOpError, "toxav bit rate set error: %d", err);
         return NULL;
@@ -581,9 +608,15 @@ static PyMethodDef ToxAVCore_methods[] = {
         "Returns True on success.\n\n"
     },
     {
-        "bit_rate_set", (PyCFunction)ToxAVCore_bit_rate_set, METH_VARARGS,
-        "bit_rate_set(friend_number, audio_bit_rate, video_bit_rate)\n"
-        "Set the bit rate to be used in subsequent audio/video frames."
+        "audio_set_bit_rate", (PyCFunction)ToxAVCore_audio_set_bit_rate, METH_VARARGS,
+        "audio_set_bit_rate(friend_number, audio_bit_rate)\n"
+        "Set the bit rate to be used in subsequent audio frames."
+        "Returns True on success.\n\n"
+    },
+    {
+        "video_set_bit_rate", (PyCFunction)ToxAVCore_video_set_bit_rate, METH_VARARGS,
+        "video_set_bit_rate(friend_number, video_bit_rate)\n"
+        "Set the bit rate to be used in subsequent video frames."
         "Returns True on success.\n\n"
     },
     {
