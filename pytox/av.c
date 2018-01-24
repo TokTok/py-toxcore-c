@@ -387,18 +387,36 @@ ToxAVCore_call_control(ToxAVCore *self, PyObject* args)
 }
 
 static PyObject*
-ToxAVCore_bit_rate_set(ToxAVCore *self, PyObject* args)
+ToxAVCore_bit_rate_set_audio(ToxAVCore *self, PyObject* args)
 {
     uint32_t friend_number;
     int32_t audio_bit_rate;
-    int32_t video_bit_rate;
 
-    if (!PyArg_ParseTuple(args, "iii", &friend_number, &audio_bit_rate, &video_bit_rate)) {
+    if (!PyArg_ParseTuple(args, "ii", &friend_number, &audio_bit_rate)) {
         return NULL;
     }
 
     TOXAV_ERR_BIT_RATE_SET err = 0;
-    bool ret = toxav_bit_rate_set(self->av, friend_number, audio_bit_rate, video_bit_rate, &err);
+    bool ret = toxav_bit_rate_set_audio(self->av, friend_number, audio_bit_rate, &err);
+    if (ret == false) {
+        PyErr_Format(ToxOpError, "toxav bit rate set error: %d", err);
+        return NULL;
+    }
+    return PyBool_FromLong(ret);
+}
+
+static PyObject*
+ToxAVCore_bit_rate_set_video(ToxAVCore *self, PyObject* args)
+{
+    uint32_t friend_number;
+    int32_t video_bit_rate;
+
+    if (!PyArg_ParseTuple(args, "ii", &friend_number, &video_bit_rate)) {
+        return NULL;
+    }
+
+    TOXAV_ERR_BIT_RATE_SET err = 0;
+    bool ret = toxav_bit_rate_set_video(self->av, friend_number, video_bit_rate, &err);
     if (ret == false) {
         PyErr_Format(ToxOpError, "toxav bit rate set error: %d", err);
         return NULL;
@@ -581,9 +599,15 @@ static PyMethodDef ToxAVCore_methods[] = {
         "Returns True on success.\n\n"
     },
     {
-        "bit_rate_set", (PyCFunction)ToxAVCore_bit_rate_set, METH_VARARGS,
-        "bit_rate_set(friend_number, audio_bit_rate, video_bit_rate)\n"
-        "Set the bit rate to be used in subsequent audio/video frames."
+        "bit_rate_set_audio", (PyCFunction)ToxAVCore_bit_rate_set_audio, METH_VARARGS,
+        "bit_rate_set_audio(friend_number, audio_bit_rate, video_bit_rate)\n"
+        "Set the bit rate to be used in subsequent audio frames."
+        "Returns True on success.\n\n"
+    },
+    {
+        "bit_rate_set_video", (PyCFunction)ToxAVCore_bit_rate_set_video, METH_VARARGS,
+        "bit_rate_set_video(friend_number, audio_bit_rate, video_bit_rate)\n"
+        "Set the bit rate to be used in subsequent video frames."
         "Returns True on success.\n\n"
     },
     {
