@@ -29,7 +29,7 @@ from time import sleep
 from os.path import exists
 
 SERVER = [
-    "192.210.149.121",
+    "biribiri.org",
     33445,
     "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67"
 ]

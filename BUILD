@@ -4,7 +4,10 @@ cc_binary(
         "pytox/*.c",
         "pytox/*.h",
     ]),
-    copts = ["-I/usr/include/python2.7"],
+    copts = [
+        "-I/usr/include/python2.7",
+        "-DENABLE_AV",
+    ],
     linkopts = [
         "-Wl,--version-script,$(location pytox.ld)",
         "-lpython2.7",
