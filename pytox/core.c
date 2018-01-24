@@ -177,9 +177,8 @@ static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* to
     if (sz > 0) {
         uint8_t *savedata_data = calloc(1, sz); /* XXX: Memory leak! */
         memcpy(savedata_data, buf, sz);
-        tox_opts->savedata_data = savedata_data;
-        tox_opts->savedata_length = sz;
-        tox_opts->savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
+        tox_options_set_savedata_type(tox_opts, TOX_SAVEDATA_TYPE_TOX_SAVE);
+        tox_options_set_savedata_data(tox_opts, savedata_data, sz);
     }
 
     p = PyObject_GetAttrString(pyopts, "proxy_host");
@@ -187,46 +186,46 @@ static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* to
     if (sz > 0) {
         char *proxy_host = calloc(1, sz); /* XXX: Memory leak! */
         memcpy(proxy_host, buf, sz);
-        tox_opts->proxy_host = proxy_host;
+        tox_options_set_proxy_host(tox_opts, proxy_host);
     }
 
     p = PyObject_GetAttrString(pyopts, "proxy_port");
     if (p) {
-        tox_opts->proxy_port = PyLong_AsLong(p);
+        tox_options_set_proxy_port(tox_opts, PyLong_AsLong(p));
     }
 
     p = PyObject_GetAttrString(pyopts, "proxy_type");
     if (p) {
-        tox_opts->proxy_type = PyLong_AsLong(p);
+        tox_options_set_proxy_type(tox_opts, PyLong_AsLong(p));
     }
 
     p = PyObject_GetAttrString(pyopts, "ipv6_enabled");
     if (p) {
-        tox_opts->ipv6_enabled = p == Py_True;
+        tox_options_set_ipv6_enabled(tox_opts, p == Py_True);
     }
 
     p = PyObject_GetAttrString(pyopts, "udp_enabled");
     if (p) {
-        tox_opts->udp_enabled = p == Py_True;
+        tox_options_set_udp_enabled(tox_opts, p == Py_True);
     }
 
     p = PyObject_GetAttrString(pyopts, "start_port");
     if (p) {
-        tox_opts->start_port = PyLong_AsLong(p);
+        tox_options_set_start_port(tox_opts, PyLong_AsLong(p));
     }
 
     p = PyObject_GetAttrString(pyopts, "end_port");
     if (p) {
-        tox_opts->end_port = PyLong_AsLong(p);
+        tox_options_set_end_port(tox_opts, PyLong_AsLong(p));
     }
 
     p = PyObject_GetAttrString(pyopts, "tcp_port");
     if (p) {
-        tox_opts->tcp_port = PyLong_AsLong(p);
+        tox_options_set_tcp_port(tox_opts, PyLong_AsLong(p));
     }
 
-    tox_opts->log_callback = callback_log;
-    tox_opts->log_user_data = self;
+    tox_options_set_log_callback(tox_opts, callback_log);
+    tox_options_set_log_user_data(tox_opts, self);
 }
 
 static int init_helper(ToxCore* self, PyObject* args)
@@ -245,15 +244,15 @@ static int init_helper(ToxCore* self, PyObject* args)
       }
   }
 
-  struct Tox_Options options = {0};
-  tox_options_default(&options);
+  struct Tox_Options *options = tox_options_new(NULL);
 
   if (opts != NULL) {
-      init_options(self, opts, &options);
+      init_options(self, opts, options);
   }
 
   TOX_ERR_NEW err = 0;
-  Tox* tox = tox_new(&options, &err);
+  Tox* tox = tox_new(options, &err);
+  tox_options_free(options);
 
   if (tox == NULL) {
       PyErr_Format(ToxOpError, "failed to initialize toxcore: %d", err);
