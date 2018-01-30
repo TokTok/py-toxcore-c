@@ -5,29 +5,44 @@ cache:
   directories:
   - $HOME/cache
 
-python:
-- "2.6"
-- "2.7"
-- "3.2"
-- "3.3"
-- "3.4"
-- "3.5"
+jobs:
+  include:
+  - python: "2.6"
+    before_script: &install_deps
+    - export TOXCORE_REPO=TokTok/c-toxcore
+    - export CACHE_DIR="$HOME/cache"
+    - export CFLAGS="-I$CACHE_DIR/usr/include"
+    - export LDFLAGS="-L$CACHE_DIR/usr/lib"
+    - export LD_LIBRARY_PATH="$CACHE_DIR/usr/lib"
+    - export PKG_CONFIG_PATH="$CACHE_DIR/usr/lib/pkgconfig"
+    - tools/install-deps.sh > /dev/null
+    if: type IN (push, api, cron)
+  - python: "2.7"
+    before_script: *install_deps
+  - python: "3.2"
+    before_script: *install_deps
+    if: type IN (push, api, cron)
+  - python: "3.3"
+    before_script: *install_deps
+    if: type IN (push, api, cron)
+  - python: "3.4"
+    before_script: *install_deps
+    if: type IN (push, api, cron)
+  - python: "3.5"
+    before_script: *install_deps
+    if: type IN (push, api, cron)
+  - python: "3.6"
+    before_script: *install_deps
+  - python: "nightly"
+    before_script: *install_deps
+    if: type IN (push, api, cron)
+  - language: generic
+    services: docker
+    script: docker build -t pytox .
+    if: type IN (push, api, cron)
 
 addons: {apt: {packages: [yasm]}}
-
-before_script:
-- export TOXCORE_REPO=TokTok/c-toxcore
-- export CACHE_DIR="$HOME/cache"
-- export CFLAGS="-I$CACHE_DIR/usr/include"
-- export LDFLAGS="-L$CACHE_DIR/usr/lib"
-- export LD_LIBRARY_PATH="$CACHE_DIR/usr/lib"
-- export PKG_CONFIG_PATH="$CACHE_DIR/usr/lib/pkgconfig"
-- tools/install-deps.sh > /dev/null
 
 script:
 - pip install .
 - python tests/tests.py
-
-branches:
-  only:
-  - master
