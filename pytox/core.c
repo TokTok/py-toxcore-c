@@ -1511,15 +1511,13 @@ static PyMethodDef Tox_methods[] = {
     "Callback for joins/parts/name changes, default implementation does "
     "nothing.\n\n"
     "There are there possible *change* values:\n\n"
-    "+----------------------------------------------+----------------------+\n"
-    "| change                                       | description          |\n"
-    "+==============================================+======================+\n"
-    "| Tox.CONFERENCE_STATE_CHANGE_PEER_JOIN        | a peer is added      |\n"
-    "+----------------------------------------------+----------------------+\n"
-    "| Tox.CONFERENCE_STATE_CHANGE_PEER_EXIT        | a peer is deleted    |\n"
-    "+----------------------------------------------+----------------------+\n"
-    "| Tox.CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE | name of peer changed |\n"
-    "+----------------------------------------------+----------------------+\n"
+    "+----------------------------------------------+----------------------------+\n"
+    "| change                                       | description                |\n"
+    "+==============================================+============================+\n"
+    "| Tox.CONFERENCE_STATE_CHANGE_LIST_CHANGED     | a peer is added or removed |\n"
+    "+----------------------------------------------+----------------------------+\n"
+    "| Tox.CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE | name of peer changed       |\n"
+    "+----------------------------------------------+----------------------------+\n"
   },
   {
     "on_file_recv", (PyCFunction)ToxCore_callback_stub, METH_VARARGS,
@@ -1937,8 +1935,7 @@ void ToxCore_install_dict()
     SET(USER_STATUS_NONE)
     SET(USER_STATUS_AWAY)
     SET(USER_STATUS_BUSY)
-    SET(CONFERENCE_STATE_CHANGE_PEER_JOIN)
-    SET(CONFERENCE_STATE_CHANGE_PEER_EXIT)
+    SET(CONFERENCE_STATE_CHANGE_LIST_CHANGED)
     SET(CONFERENCE_STATE_CHANGE_PEER_NAME_CHANGE)
     SET(FILE_KIND_DATA)
     SET(FILE_KIND_AVATAR)

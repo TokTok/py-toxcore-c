@@ -532,7 +532,7 @@ class ToxTest(unittest.TestCase):
 
         def on_conference_namelist_change(self, gid, peer_number, change):
             assert gid == group_id
-            assert change == Tox.CONFERENCE_STATE_CHANGE_PEER_JOIN
+            assert change == Tox.CONFERENCE_STATE_CHANGE_LIST_CHANGED
             self.gn = True
 
         AliceTox.on_conference_namelist_change = on_conference_namelist_change
