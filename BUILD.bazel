@@ -1,3 +1,7 @@
+load("//tools:project.bzl", "project")
+
+project("py-toxcore-c")
+
 cc_binary(
     name = "pytox.so",
     srcs = glob([
