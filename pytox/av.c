@@ -237,7 +237,7 @@ ToxAVCore_callback_video_receive_frame(ToxAV *toxAV, uint32_t friend_number, uin
  * NOTE Compatibility with old toxav group calls TODO remove
  */
 static void
-ToxAVCore_callback_add_av_groupchat(/*Tox*/void *tox, int groupnumber, int peernumber, const int16_t *pcm,
+ToxAVCore_callback_add_av_groupchat(/*Tox*/void *tox, uint32_t groupnumber, uint32_t peernumber, const int16_t *pcm,
                                     unsigned int samples, uint8_t channels, unsigned int sample_rate, void *self)
 {
     PyGILState_STATE gstate = PyGILState_Ensure();
@@ -256,7 +256,7 @@ ToxAVCore_callback_add_av_groupchat(/*Tox*/void *tox, int groupnumber, int peern
 }
 
 static void
-ToxAVCore_callback_join_av_groupchat(/*Tox*/void *tox, int groupnumber, int peernumber, const int16_t *pcm,
+ToxAVCore_callback_join_av_groupchat(/*Tox*/void *tox, uint32_t groupnumber, uint32_t peernumber, const int16_t *pcm,
                                      unsigned int samples, uint8_t channels, unsigned int sample_rate, void *self)
 {
     PyGILState_STATE gstate = PyGILState_Ensure();
