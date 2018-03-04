@@ -11,11 +11,9 @@ import re
 
 
 TOXURL =\
-    "https://raw.githubusercontent.com/irungentoo/toxcore/master/toxcore/tox.h"
+    "https://raw.githubusercontent.com/TokTok/c-toxcore/master/toxcore/tox.h"
 PYTOXURL =\
-    "https://raw.githubusercontent.com/aitjcize/PyTox/master/pytox/core.c"
-PYTOXURL =\
-    "https://raw.githubusercontent.com/kitech/PyTox/newapi/pytox/core.c"
+    "https://raw.githubusercontent.com/TokTok/py-toxcore-c/master/pytox/core.c"
 
 toxsrc = urlopen(TOXURL).read()
 pytoxsrc = urlopen(PYTOXURL).read()

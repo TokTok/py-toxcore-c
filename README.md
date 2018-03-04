@@ -1,8 +1,4 @@
-[![image](http://img.shields.io/travis/aitjcize/PyTox.svg)](https://travis-ci.org/aitjcize/PyTox)
-
-[![image](http://img.shields.io/pypi/v/PyTox.svg)](https://pypi.python.org/pypi/PyTox)
-
-[![image](http://img.shields.io/pypi/dm/PyTox.svg)](https://crate.io/packages/PyTox)
+[![image](http://img.shields.io/travis/TokTok/py-toxcore-c.svg)](https://travis-ci.org/TokTok/py-toxcore-c)
 
 # PyTox
 
@@ -55,7 +51,7 @@ class EchoBot(Tox):
 
 As you can see callbacks are mapped into class method instead of using
 it the the c ways. For more details please refer to
-[examples/echo.py](https://github.com/aitjcize/PyTox/blob/master/examples/echo.py).
+[examples/echo.py](https://github.com/TokTok/py-toxcore-c/blob/master/examples/echo.py).
 
 ## Getting started
 
@@ -70,7 +66,7 @@ container:
 
 ## Examples
 
-  - [echo.py](https://github.com/aitjcize/PyTox/blob/master/examples/echo.py):
+  - [echo.py](https://github.com/TokTok/py-toxcore-c/blob/master/examples/echo.py):
     A working echo bot that wait for friend requests, and than start
     echoing anything that friend send.
 

@@ -6,19 +6,15 @@
 Welcome to PyTox's documentation!
 =================================
 
-.. image:: http://img.shields.io/travis/aitjcize/PyTox.svg
-   :target: https://travis-ci.org/aitjcize/PyTox
-.. image:: http://img.shields.io/pypi/v/PyTox.svg
-   :target: https://pypi.python.org/pypi/PyTox
-.. image:: http://img.shields.io/pypi/dm/PyTox.svg
-   :target: https://crate.io/packages/PyTox
+.. image:: http://img.shields.io/travis/TokTok/py-toxcore-c.svg
+   :target: https://travis-ci.org/TokTok/py-toxcore-c
 
 About
 -----
 
-PyTox is the offical Python binding for `Project-Tox <http://tox.im/>`_.
+PyTox is the offical Python binding for `Project-Tox <https://tox.chat/>`_.
 
-The project page/repo is located at `Github <https://github.com/aitjcize/PyTox/>`_.
+The project page/repo is located at `Github <https://github.com/TokTok/py-toxcore-c/>`_.
 
 Module Documentation
 --------------------

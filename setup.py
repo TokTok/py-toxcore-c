@@ -35,11 +35,11 @@ else:
 
 setup(
     name="PyTox",
-    version="0.0.23",
+    version="0.2.0",
     description="Python binding for Tox the skype replacement",
     author="Wei-Ning Huang (AZ)",
     author_email="aitjcize@gmail.com",
-    url="http://github.com/aitjcize/PyTox",
+    url="http://github.com/TokTok/py-toxcore-c",
     license="GPL",
     ext_modules=[
         Extension(
