@@ -27,10 +27,10 @@
 
 extern PyObject* ToxOpError;
 
-#define CHECK_TOX(self)                                        \
-  if ((self)->tox == NULL) {                                   \
-    PyErr_SetString(ToxOpError, "toxcore object killed.");     \
-    return NULL;                                               \
+#define CHECK_TOX(self)                                             \
+  if ((self)->tox == NULL) {                                        \
+    PyErr_SetString(ToxOpError, "toxcore object not initialised."); \
+    return NULL;                                                    \
   }
 
 #if PY_MAJOR_VERSION < 3

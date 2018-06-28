@@ -190,7 +190,8 @@ static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* to
     p = PyObject_GetAttrString(pyopts, "proxy_host");
     PyStringUnicode_AsStringAndSize(p, &buf, &sz);
     if (sz > 0) {
-        char *proxy_host = calloc(1, sz); /* XXX: Memory leak! */
+        // Needs +1 for the NUL byte at the end.
+        char *proxy_host = calloc(1, sz + 1); /* XXX: Memory leak! */
         memcpy(proxy_host, buf, sz);
         tox_options_set_proxy_host(tox_opts, proxy_host);
     }
@@ -294,20 +295,11 @@ ToxCore_new(PyTypeObject *type, PyObject* args, PyObject* kwds)
   ToxCore* self = (ToxCore*)type->tp_alloc(type, 0);
   self->tox = NULL;
 
-  /* We don't care about subclass's arguments */
-  if (init_helper(self, NULL) == -1) {
-    return NULL;
-  }
-
   return (PyObject*)self;
 }
 
 static int ToxCore_init(ToxCore* self, PyObject* args, PyObject* kwds)
 {
-  /* since __init__ in Python is optional(superclass need to call it
-   * explicitly), we need to initialize self->tox in ToxCore_new instead of
-   * init. If ToxCore_init is called, we re-initialize self->tox and pass
-   * the new ipv6enabled setting. */
   return init_helper(self, args);
 }
 
