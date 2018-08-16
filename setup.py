@@ -1,14 +1,17 @@
 import os
 
 from distutils.core import setup, Extension
-from subprocess import Popen, PIPE
 
 def supports_av():
-    h = Popen("echo 'extern int toxav_new(); int (*x)() = &toxav_new;' | cc $LDFLAGS -ltoxcore -xc -", shell=True, stderr=PIPE)
-    out, err = h.communicate()
+    os.system("""
+    echo 'extern int toxav_new(); int (*x)() = &toxav_new; int main(){}' \\
+      | cc $LDFLAGS -xc - -ltoxcore \\
+      > /dev/null 2>&1
+    """)
     if os.path.exists("a.out"):
         os.remove("a.out")
-    return "toxav" not in str(err)
+        return True
+    return False
 
 sources = ["pytox/pytox.c", "pytox/core.c", "pytox/util.c"]
 libraries = [

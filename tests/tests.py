@@ -72,7 +72,8 @@ class AliceTox(Tox):
         super(AliceTox, self).__init__(opts)
 
         def on_log(self, level, file, line, func, message):
-            print((level, file, line, func, message))
+            if level > 0:
+                print((level, file, line, func, message))
         AliceTox.on_log = on_log
 
 
