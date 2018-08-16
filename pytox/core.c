@@ -998,6 +998,35 @@ ToxCore_conference_peer_get_name(ToxCore* self, PyObject* args)
 }
 
 static PyObject*
+ToxCore_conference_peer_get_public_key(ToxCore* self, PyObject* args)
+{
+  CHECK_TOX(self);
+
+  uint8_t pk[TOX_PUBLIC_KEY_SIZE + 1];
+  pk[TOX_PUBLIC_KEY_SIZE] = 0;
+
+  uint8_t hex[TOX_PUBLIC_KEY_SIZE * 2 + 1];
+  memset(hex, 0, TOX_PUBLIC_KEY_SIZE * 2 + 1);
+
+  int conference_number = 0;
+  int peer_number = 0;
+  if (!PyArg_ParseTuple(args, "ii", &conference_number, &peer_number)) {
+    return NULL;
+  }
+
+  TOX_ERR_CONFERENCE_PEER_QUERY error;
+  tox_conference_peer_get_public_key(self->tox, conference_number,
+      peer_number, pk, &error);
+  if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
+    PyErr_SetString(ToxOpError, "failed to get conference peer public key");
+    Py_RETURN_NONE;
+  }
+
+  bytes_to_hex_string(pk, TOX_PUBLIC_KEY_SIZE, hex);
+  return PYSTRING_FromString((const char*)hex);
+}
+
+static PyObject*
 ToxCore_conference_invite(ToxCore* self, PyObject* args)
 {
   CHECK_TOX(self);
@@ -1768,6 +1797,11 @@ static PyMethodDef Tox_methods[] = {
     "conference_peer_get_name", (PyCFunction)ToxCore_conference_peer_get_name, METH_VARARGS,
     "conference_peer_get_name(conference_number, peer_number)\n"
     "Get the conference peer's name."
+  },
+  {
+    "conference_peer_get_public_key", (PyCFunction)ToxCore_conference_peer_get_public_key, METH_VARARGS,
+    "conference_peer_get_public_key(conference_number, peer_number)\n"
+    "Get the conference peer's public key."
   },
   {
     "conference_invite", (PyCFunction)ToxCore_conference_invite, METH_VARARGS,
