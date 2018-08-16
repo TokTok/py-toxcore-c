@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # simple script to test the completeness of the python bindings:
 
 from sys import version_info

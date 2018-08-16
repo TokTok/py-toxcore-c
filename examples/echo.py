@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 #
 # @file   echo.py
 # @author Wei-Ning Huang (AZ) <aitjcize@gmail.com>
 #
-# Copyright (C) 2013 - 2014 Wei-Ning Huang (AZ) <aitjcize@gmail.com>
+# Copyright © 2017-2018 The TokTok team.
+# Copyright © 2013-2014 Wei-Ning Huang (AZ) <aitjcize@gmail.com>
 # All Rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
