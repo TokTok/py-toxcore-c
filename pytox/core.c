@@ -132,6 +132,13 @@ static void callback_conference_peer_list_changed(Tox *tox, uint32_t conference_
       conference_number);
 }
 
+static void callback_conference_title(Tox *tox, uint32_t conference_number,  uint32_t peer_number, const uint8_t *title,
+									 size_t length, void *self)
+{
+  PyObject_CallMethod((PyObject*)self, "on_conference_title", "iis",
+      conference_number, peer_number, title);
+}
+
 static void callback_file_chunk_request(Tox *tox, uint32_t friend_number, uint32_t file_number,
                                         uint64_t position, size_t length, void *self)
 {
@@ -292,6 +299,7 @@ static int init_helper(ToxCore* self, PyObject* args)
   tox_callback_conference_message(tox, callback_conference_message);
   tox_callback_conference_peer_name(tox, callback_conference_peer_name);
   tox_callback_conference_peer_list_changed(tox, callback_conference_peer_list_changed);
+  tox_callback_conference_title(tox, callback_conference_title);
   tox_callback_file_chunk_request(tox, callback_file_chunk_request);
   tox_callback_file_recv_control(tox, callback_file_recv_control);
   tox_callback_file_recv(tox, callback_file_recv);
@@ -1580,6 +1588,11 @@ static PyMethodDef Tox_methods[] = {
     "on_conference_peer_list_changed", (PyCFunction)ToxCore_callback_stub, METH_VARARGS,
     "on_conference_peer_list_changed(conference_number)\n"
     "Callback for joins/parts, default implementation does nothing.\n\n"
+  },
+  {
+    "on_conference_title", (PyCFunction)ToxCore_callback_stub, METH_VARARGS,
+    "on_conference_title(conference_number, peer_number, title)\n"
+    "Callback for changes in conference title.\n\n"
   },
   {
     "on_file_recv", (PyCFunction)ToxCore_callback_stub, METH_VARARGS,
