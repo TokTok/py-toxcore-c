@@ -38,6 +38,8 @@ jobs:
     if: type IN (push, api, cron)
   - python: "3.6"
     before_script: *install_deps
+    install: pip install ndg-httpsclient urllib3[secure] cpp-coveralls
+    after_script: coveralls
   - python: "nightly"
     before_script: *install_deps
     if: type IN (push, api, cron)
@@ -46,10 +48,6 @@ jobs:
     script: docker build -t pytox .
     if: type IN (push, api, cron)
 
-install:
-- pip install ndg-httpsclient urllib3[secure] cpp-coveralls
-
 script:
 - python setup.py build_ext --inplace
 - PYTHONPATH=. python tests/tests.py
-- coveralls
