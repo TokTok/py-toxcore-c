@@ -182,7 +182,7 @@ static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* to
     p = PyObject_GetAttrString(pyopts, "savedata_data");
     PyBytes_AsStringAndSize(p, &buf, &sz);
     if (sz > 0) {
-        uint8_t *savedata_data = calloc(1, sz); /* XXX: Memory leak! */
+        uint8_t *savedata_data = calloc(1, sz);
         memcpy(savedata_data, buf, sz);
         tox_options_set_savedata_type(tox_opts, TOX_SAVEDATA_TYPE_TOX_SAVE);
         tox_options_set_savedata_data(tox_opts, savedata_data, sz);
@@ -192,7 +192,7 @@ static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* to
     PyStringUnicode_AsStringAndSize(p, &buf, &sz);
     if (sz > 0) {
         // Needs +1 for the NUL byte at the end.
-        char *proxy_host = calloc(1, sz + 1); /* XXX: Memory leak! */
+        char *proxy_host = calloc(1, sz + 1);
         memcpy(proxy_host, buf, sz);
         tox_options_set_proxy_host(tox_opts, proxy_host);
     }
@@ -260,6 +260,10 @@ static int init_helper(ToxCore* self, PyObject* args)
 
   TOX_ERR_NEW err = 0;
   Tox* tox = tox_new(options, &err);
+  if (opts != NULL) {
+      free((uint8_t *)tox_options_get_savedata_data(options));
+      free((char *)tox_options_get_proxy_host(options));
+  }
   tox_options_free(options);
 
   if (tox == NULL) {
