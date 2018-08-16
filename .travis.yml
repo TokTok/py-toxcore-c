@@ -1,6 +1,12 @@
 language: python
 sudo: false
 
+addons:
+  apt:
+    packages:
+    - libopus-dev
+    - libvpx-dev
+
 cache:
   directories:
   - $HOME/cache
@@ -9,9 +15,8 @@ jobs:
   include:
   - python: "2.6"
     before_script: &install_deps
-    - export TOXCORE_REPO=TokTok/c-toxcore
     - export CACHE_DIR="$HOME/cache"
-    - export CFLAGS="-I$CACHE_DIR/usr/include"
+    - export CFLAGS="-I$CACHE_DIR/usr/include -fprofile-arcs -ftest-coverage"
     - export LDFLAGS="-L$CACHE_DIR/usr/lib"
     - export LD_LIBRARY_PATH="$CACHE_DIR/usr/lib"
     - export PKG_CONFIG_PATH="$CACHE_DIR/usr/lib/pkgconfig"
@@ -41,8 +46,10 @@ jobs:
     script: docker build -t pytox .
     if: type IN (push, api, cron)
 
-addons: {apt: {packages: [yasm]}}
+install:
+- pip install ndg-httpsclient urllib3[secure] cpp-coveralls
 
 script:
-- pip install .
-- python tests/tests.py
+- python setup.py build_ext --inplace
+- PYTHONPATH=. python tests/tests.py
+- coveralls

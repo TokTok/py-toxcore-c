@@ -18,47 +18,15 @@ fi
 cd ..
 rm -rf libsodium
 
-# install libopus, needed for audio encoding/decoding
-if ! [ -f $CACHE_DIR/usr/lib/pkgconfig/opus.pc ]; then
-  curl -L https://downloads.xiph.org/releases/opus/opus-1.1.tar.gz -o opus-1.1.tar.gz
-  tar xzf opus-1.1.tar.gz
-  cd opus-1.1
-  ./configure --prefix=$CACHE_DIR/usr
-  make -j`nproc`
-  make install
-  cd ..
-  rm -rf opus-1.1*
-fi
-
-# install libvpx, needed for video encoding/decoding
-if ! [ -d libvpx ]; then
-  git clone --depth=1 --branch=v1.6.0 https://chromium.googlesource.com/webm/libvpx
-fi
-cd libvpx
-git rev-parse HEAD > libvpx.sha
-if ! ([ -f "$CACHE_DIR/libvpx.sha" ] && diff "$CACHE_DIR/libvpx.sha" libvpx.sha); then
-  ./configure --prefix=$CACHE_DIR/usr --enable-shared
-  make -j`nproc`
-  make install
-  mv libvpx.sha "$CACHE_DIR/libvpx.sha"
-fi
-cd ..
-rm -rf libvpx
-
 # install toxcore
 if ! [ -d toxcore ]; then
-  git clone --depth=1 --branch=master https://github.com/$TOXCORE_REPO.git toxcore
+  git clone --depth=1 --branch=master https://github.com/TokTok/c-toxcore.git toxcore
 fi
 cd toxcore
 git rev-parse HEAD > toxcore.sha
 if ! ([ -f "$CACHE_DIR/toxcore.sha" ] && diff "$CACHE_DIR/toxcore.sha" toxcore.sha); then
-  if [ -f CMakeLists.txt ]; then
-    cmake -B_build -H. -DDEBUG=ON -DSTRICT_ABI=ON -DCMAKE_INSTALL_PREFIX:PATH=$CACHE_DIR/usr
-  else
-    mkdir _build
-    autoreconf -fi
-    (cd _build && ../configure --prefix=$CACHE_DIR/usr)
-  fi
+  rm -f _build/CMakeCache.txt
+  cmake -B_build -H. -DDEBUG=ON -DMUST_BUILD_TOXAV=ON -DSTRICT_ABI=ON -DCMAKE_INSTALL_PREFIX:PATH=$CACHE_DIR/usr
   make -C_build -j`nproc`
   make -C_build install
   mv toxcore.sha "$CACHE_DIR/toxcore.sha"
