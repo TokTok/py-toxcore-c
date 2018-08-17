@@ -514,6 +514,7 @@ class ToxTest(unittest.TestCase):
         t:conference_get_chatlist_size
         t:conference_get_chatlist
         t:conference_send_message
+        t:conference_get_id
         t:conference_get_title
         t:conference_get_type
         t:conference_send_message
@@ -588,6 +589,25 @@ class ToxTest(unittest.TestCase):
         #: Test title change
         self.bob.conference_set_title(group_id, 'My special title')
         assert self.bob.conference_get_title(group_id) == 'My special title'
+
+        #: Test conference ID getter (32 * 2 characters).
+        assert len(self.bob.conference_get_id(group_id)) == 64
+
+        # Invalid conference id:
+        has_error = False
+        try:
+            self.bob.conference_get_id(1234)
+        except OperationFailedError:
+            has_error = True
+        assert has_error
+
+        # Invalid type for conference id:
+        has_error = False
+        try:
+            self.bob.conference_get_id("1234")
+        except OperationFailedError:
+            has_error = True
+        assert has_error
 
         #: Test group message
         AID = self.aid

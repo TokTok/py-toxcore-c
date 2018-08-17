@@ -910,6 +910,30 @@ ToxCore_conference_delete(ToxCore* self, PyObject* args)
   Py_RETURN_NONE;
 }
 
+static PyObject *
+ToxCore_conference_get_id(ToxCore *self, PyObject *args)
+{
+  CHECK_TOX(self);
+
+  int conference_number = 0;
+
+  if (!PyArg_ParseTuple(args, "i", &conference_number)) {
+    PyErr_SetString(ToxOpError, "failed to parse arguments");
+    return NULL;
+  }
+
+  uint8_t id[TOX_CONFERENCE_ID_SIZE];
+  bool success = tox_conference_get_id(self->tox, conference_number, id);
+  if (!success) {
+    PyErr_SetString(ToxOpError, "failed to get conference id");
+    return NULL;
+  }
+
+  uint8_t hex[TOX_CONFERENCE_ID_SIZE * 2 + 1] = {0};
+  bytes_to_hex_string(id, TOX_CONFERENCE_ID_SIZE, hex);
+  return PYSTRING_FromString((const char *)hex);
+}
+
 static PyObject*
 ToxCore_conference_get_title(ToxCore* self, PyObject* args)
 {
@@ -1763,6 +1787,11 @@ static PyMethodDef Tox_methods[] = {
     "conference_delete", (PyCFunction)ToxCore_conference_delete, METH_VARARGS,
     "conference_delete(conference_number)\n"
     "Delete a conference from the chats array."
+  },
+  {
+    "conference_get_id", (PyCFunction)ToxCore_conference_get_id, METH_VARARGS,
+    "conference_get_id(conference_number)\n"
+    "Gets conference unique ID."
   },
   {
     "conference_peer_get_name", (PyCFunction)ToxCore_conference_peer_get_name, METH_VARARGS,
