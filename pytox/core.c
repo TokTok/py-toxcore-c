@@ -173,7 +173,8 @@ static void callback_file_recv_chunk(Tox *tox, uint32_t friend_number, uint32_t 
                         friend_number, file_number, position, data, length);
 }
 
-static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* tox_opts)
+static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* tox_opts,
+                         uint8_t **savedata_data, char **proxy_host)
 {
     char *buf = NULL;
     Py_ssize_t sz = 0;
@@ -182,19 +183,19 @@ static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* to
     p = PyObject_GetAttrString(pyopts, "savedata_data");
     PyBytes_AsStringAndSize(p, &buf, &sz);
     if (sz > 0) {
-        uint8_t *savedata_data = calloc(1, sz);
-        memcpy(savedata_data, buf, sz);
+        *savedata_data = calloc(1, sz);
+        memcpy(*savedata_data, buf, sz);
         tox_options_set_savedata_type(tox_opts, TOX_SAVEDATA_TYPE_TOX_SAVE);
-        tox_options_set_savedata_data(tox_opts, savedata_data, sz);
+        tox_options_set_savedata_data(tox_opts, *savedata_data, sz);
     }
 
     p = PyObject_GetAttrString(pyopts, "proxy_host");
     PyStringUnicode_AsStringAndSize(p, &buf, &sz);
     if (sz > 0) {
         // Needs +1 for the NUL byte at the end.
-        char *proxy_host = calloc(1, sz + 1);
-        memcpy(proxy_host, buf, sz);
-        tox_options_set_proxy_host(tox_opts, proxy_host);
+        *proxy_host = calloc(1, sz + 1);
+        memcpy(*proxy_host, buf, sz);
+        tox_options_set_proxy_host(tox_opts, *proxy_host);
     }
 
     p = PyObject_GetAttrString(pyopts, "proxy_port");
@@ -253,17 +254,17 @@ static int init_helper(ToxCore* self, PyObject* args)
   }
 
   struct Tox_Options *options = tox_options_new(NULL);
+  uint8_t *savedata_data = NULL;
+  char *proxy_host = NULL;
 
   if (opts != NULL) {
-      init_options(self, opts, options);
+      init_options(self, opts, options, &savedata_data, &proxy_host);
   }
 
   TOX_ERR_NEW err = 0;
   Tox* tox = tox_new(options, &err);
-  if (opts != NULL) {
-      free((uint8_t *)tox_options_get_savedata_data(options));
-      free((char *)tox_options_get_proxy_host(options));
-  }
+  free(savedata_data);
+  free(proxy_host);
   tox_options_free(options);
 
   if (tox == NULL) {
@@ -674,7 +675,7 @@ ToxCore_self_set_status(ToxCore* self, PyObject* args)
   }
 
   tox_self_set_status(self->tox, status);
-  if (true == false) {
+  if (/* DISABLES CODE */ (true) == false) {
     PyErr_SetString(ToxOpError, "failed to set status");
     return NULL;
   }
