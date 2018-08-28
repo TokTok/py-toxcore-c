@@ -9,7 +9,11 @@ cc_binary(
         "pytox/*.h",
     ]),
     copts = ["-DENABLE_AV"],
-    linkopts = ["-Wl,--version-script,$(location pytox.ld)"],
+    linkopts = select({
+        "@toktok//tools/config:freebsd": ["-Wl,--version-script,$(location pytox.ld)"],
+        "@toktok//tools/config:linux": ["-Wl,--version-script,$(location pytox.ld)"],
+        "@toktok//tools/config:osx": [],
+    }),
     linkshared = True,
     visibility = ["//visibility:public"],
     deps = [
