@@ -8,7 +8,10 @@ cc_binary(
         "pytox/*.c",
         "pytox/*.h",
     ]),
-    copts = ["-DENABLE_AV"],
+    copts = [
+        "-DENABLE_AV",
+        "-Wno-strict-aliasing",
+    ],
     linkopts = select({
         "@toktok//tools/config:freebsd": ["-Wl,--version-script,$(location pytox.ld)"],
         "@toktok//tools/config:linux": ["-Wl,--version-script,$(location pytox.ld)"],

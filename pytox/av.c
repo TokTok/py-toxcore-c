@@ -722,7 +722,7 @@ PyTypeObject ToxAVCoreType = {
     ToxAVCore_new,                 /* tp_new */
 };
 
-void ToxAVCore_install_dict()
+void ToxAVCore_install_dict(void)
 {
 #define SET(name)                                           \
     PyObject* obj_##name = PyLong_FromLong(TOXAV_##name);   \

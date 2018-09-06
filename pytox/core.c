@@ -218,6 +218,11 @@ static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* to
         tox_options_set_udp_enabled(tox_opts, p == Py_True);
     }
 
+    p = PyObject_GetAttrString(pyopts, "local_discovery_enabled");
+    if (p) {
+        tox_options_set_local_discovery_enabled(tox_opts, p == Py_True);
+    }
+
     p = PyObject_GetAttrString(pyopts, "start_port");
     if (p) {
         tox_options_set_start_port(tox_opts, PyLong_AsLong(p));
@@ -1262,6 +1267,36 @@ ToxCore_file_get_file_id(ToxCore* self, PyObject* args)
 }
 
 static PyObject*
+ToxCore_self_get_dht_id(ToxCore* self, PyObject* args)
+{
+    CHECK_TOX(self);
+
+    uint8_t dht_id[TOX_PUBLIC_KEY_SIZE];
+    uint8_t dht_id_hex[TOX_PUBLIC_KEY_SIZE * 2 + 1];
+    memset(dht_id_hex, 0, TOX_PUBLIC_KEY_SIZE * 2 + 1);
+
+    tox_self_get_dht_id(self->tox, dht_id);
+    bytes_to_hex_string(dht_id, TOX_PUBLIC_KEY_SIZE, dht_id_hex);
+
+    return PYSTRING_FromString((const char*)dht_id_hex);
+}
+
+static PyObject*
+ToxCore_self_get_udp_port(ToxCore* self, PyObject* args)
+{
+    CHECK_TOX(self);
+
+    TOX_ERR_GET_PORT err;
+    uint16_t nospam = tox_self_get_udp_port(self->tox, &err);
+    if (err != TOX_ERR_GET_PORT_OK) {
+        PyErr_Format(ToxOpError, "tox_self_get_udp_port() failed: %d", err);
+        Py_RETURN_NONE;
+    }
+
+    return PyLong_FromUnsignedLongLong(nospam);
+}
+
+static PyObject*
 ToxCore_self_get_nospam(ToxCore* self, PyObject* args)
 {
   CHECK_TOX(self);
@@ -1796,6 +1831,18 @@ static PyMethodDef Tox_methods[] = {
     "Send a file send request. Returns file id's hex string"
   },
   {
+    "self_get_dht_id", (PyCFunction)ToxCore_self_get_dht_id,
+    METH_NOARGS,
+    "self_get_dht_id()\n"
+    "get the temporary DHT public key"
+  },
+  {
+    "self_get_udp_port", (PyCFunction)ToxCore_self_get_udp_port,
+    METH_NOARGS,
+    "self_get_udp_port()\n"
+    "Return the UDP port this Tox instance is bound to."
+  },
+  {
     "self_get_nospam", (PyCFunction)ToxCore_self_get_nospam,
     METH_NOARGS,
     "self_get_nospam()\n"
@@ -1906,7 +1953,7 @@ PyTypeObject ToxCoreType = {
   ToxCore_new,               /* tp_new */
 };
 
-void ToxCore_install_dict()
+void ToxCore_install_dict(void)
 {
 #define SET(name)                                            \
     PyObject* obj_##name = PyLong_FromLong(TOX_##name);      \
