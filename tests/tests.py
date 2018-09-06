@@ -56,6 +56,7 @@ class ToxOptions():
     def __init__(self):
         self.ipv6_enabled = True
         self.udp_enabled = True
+        self.local_discovery_enabled = False
         self.proxy_type = 0  # 1=http, 2=socks
         self.proxy_host = ''
         self.proxy_port = 0
@@ -69,6 +70,9 @@ class ToxOptions():
 
 class AliceTox(Tox):
     def __init__(self, opts):
+        """
+        t:on_log
+        """
         super(AliceTox, self).__init__(opts)
 
         def on_log(self, level, file, line, func, message):
@@ -84,9 +88,17 @@ class BobTox(Tox):
 
 class ToxTest(unittest.TestCase):
     def setUp(self):
+        """
+        t:bootstrap
+        t:self_get_dht_id
+        t:self_get_udp_port
+        """
         opt = ToxOptions()
         self.alice = AliceTox(opt)
         self.bob = BobTox(opt)
+
+        self.bob.bootstrap("localhost", self.alice.self_get_udp_port(),
+                self.alice.self_get_dht_id())
 
         self.loop_until_connected()
 
