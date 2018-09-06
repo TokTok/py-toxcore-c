@@ -30,13 +30,13 @@
 
 /* ToxAV definition */
 typedef struct {
-    PyObject_HEAD
-    PyObject *core;
-    ToxAV *av;
-    uint32_t i_w, i_h;
-    unsigned char* out_image;
-    uint32_t o_w, o_h;
-    vpx_image_t *in_image;
+  PyObject_HEAD
+  PyObject *core;
+  ToxAV *av;
+  uint32_t i_w, i_h;
+  unsigned char *out_image;
+  uint32_t o_w, o_h;
+  vpx_image_t *in_image;
 } ToxAVCore;
 
 /* This needs to be extern as it's dynamically loaded by the Python interpreter. */
