@@ -28,7 +28,8 @@ PyObject *ToxOpError;
 void bytes_to_hex_string(const uint8_t *digest, int length, uint8_t *hex_digest) {
   hex_digest[2 * length] = 0;
 
-  for (int i = 0, j = 0; i < length; ++i) {
+  int i, j;
+  for (i = 0, j = 0; i < length; ++i) {
     char c;
     c = (digest[i] >> 4) & 0xf;
     c = (c > 9) ? c + 'A' - 10 : c + '0';
@@ -54,7 +55,8 @@ static int hex_char_to_int(char c) {
 }
 
 void hex_string_to_bytes(uint8_t *hexstr, int length, uint8_t *bytes) {
-  for (int i = 0; i < length; ++i) {
+  int i;
+  for (i = 0; i < length; ++i) {
     bytes[i] = (hex_char_to_int(hexstr[2 * i]) << 4) | (hex_char_to_int(hexstr[2 * i + 1]));
   }
 }

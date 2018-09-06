@@ -214,7 +214,17 @@ static void init_options(ToxCore *self, PyObject *pyopts, struct Tox_Options *to
   tox_options_set_log_user_data(tox_opts, self);
 }
 
-static int init_helper(ToxCore *self, PyObject *args) {
+static PyObject *ToxCore_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+  PyObject *obj = type->tp_alloc(type, 0);
+  ToxCore *self = (ToxCore *)obj;
+  self->tox = NULL;
+
+  return obj;
+}
+
+static int ToxCore_init(PyObject *obj, PyObject *args, PyObject *kwds) {
+  ToxCore *const self = (ToxCore *)obj;
+
   if (self->tox != NULL) {
     tox_kill(self->tox);
     self->tox = NULL;
@@ -271,23 +281,12 @@ static int init_helper(ToxCore *self, PyObject *args) {
   return 0;
 }
 
-static PyObject *ToxCore_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
-  ToxCore *self = (ToxCore *)type->tp_alloc(type, 0);
-  self->tox = NULL;
-
-  return (PyObject *)self;
-}
-
-static int ToxCore_init(ToxCore *self, PyObject *args, PyObject *kwds) {
-  return init_helper(self, args);
-}
-
-static int ToxCore_dealloc(ToxCore *self) {
+static void ToxCore_dealloc(PyObject *obj) {
+  ToxCore *self = (ToxCore *)obj;
   if (self->tox) {
     tox_kill(self->tox);
     self->tox = NULL;
   }
-  return 0;
 }
 
 static PyObject *ToxCore_callback_stub(ToxCore *self, PyObject *args) { Py_RETURN_NONE; }
@@ -1702,34 +1701,36 @@ static PyMethodDef Tox_methods[] = {
         "Return messenger blob in str.",
     },
     {
-        NULL, NULL, 0, NULL, ,
-    }};
+        NULL, NULL, 0, NULL,
+    },
+};
 
 PyTypeObject ToxCoreType = {
 #if PY_MAJOR_VERSION >= 3
-    PyVarObject_HEAD_INIT(NULL, 0)
+    PyVarObject_HEAD_INIT(NULL, 0) /* ob_base */
 #else
-    PyObject_HEAD_INIT(NULL) 0, /*ob_size*/
+    PyObject_HEAD_INIT(NULL) /* ob_base */
+    0,                       /* ob_size */
 #endif
-        "Tox",                                /*tp_name*/
-    sizeof(ToxCore),                          /*tp_basicsize*/
-    0,                                        /*tp_itemsize*/
-    (destructor)ToxCore_dealloc,              /*tp_dealloc*/
-    0,                                        /*tp_print*/
-    0,                                        /*tp_getattr*/
-    0,                                        /*tp_setattr*/
-    0,                                        /*tp_compare*/
-    0,                                        /*tp_repr*/
-    0,                                        /*tp_as_number*/
-    0,                                        /*tp_as_sequence*/
-    0,                                        /*tp_as_mapping*/
-    0,                                        /*tp_hash */
-    0,                                        /*tp_call*/
-    0,                                        /*tp_str*/
-    0,                                        /*tp_getattro*/
-    0,                                        /*tp_setattro*/
-    0,                                        /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    "Tox",                                    /* tp_name */
+    sizeof(ToxCore),                          /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    ToxCore_dealloc,                          /* tp_dealloc */
+    0,                                        /* tp_print */
+    0,                                        /* tp_getattr */
+    0,                                        /* tp_setattr */
+    0,                                        /* tp_compare */
+    0,                                        /* tp_repr */
+    0,                                        /* tp_as_number */
+    0,                                        /* tp_as_sequence */
+    0,                                        /* tp_as_mapping */
+    0,                                        /* tp_hash  */
+    0,                                        /* tp_call */
+    0,                                        /* tp_str */
+    0,                                        /* tp_getattro */
+    0,                                        /* tp_setattro */
+    0,                                        /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
     "ToxCore object",                         /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
@@ -1745,52 +1746,52 @@ PyTypeObject ToxCoreType = {
     0,                                        /* tp_descr_get */
     0,                                        /* tp_descr_set */
     0,                                        /* tp_dictoffset */
-    (initproc)ToxCore_init,                   /* tp_init */
+    ToxCore_init,                             /* tp_init */
     0,                                        /* tp_alloc */
     ToxCore_new,                              /* tp_new */
 };
 
-void ToxCore_install_dict() {
+void ToxCore_install_dict(void) {
 #define SET(name)                                     \
   PyObject *obj_##name = PyLong_FromLong(TOX_##name); \
   PyDict_SetItemString(dict, #name, obj_##name);      \
-  Py_DECREF(obj_##name);
+  Py_DECREF(obj_##name)
 
   PyObject *dict = PyDict_New();
-  SET(ERR_FRIEND_ADD_TOO_LONG)
-  SET(ERR_FRIEND_ADD_NO_MESSAGE)
-  SET(ERR_FRIEND_ADD_OWN_KEY)
-  SET(ERR_FRIEND_ADD_ALREADY_SENT)
-  SET(ERR_FRIEND_ADD_NULL)
-  SET(ERR_FRIEND_ADD_BAD_CHECKSUM)
-  SET(ERR_FRIEND_ADD_SET_NEW_NOSPAM)
-  SET(ERR_FRIEND_ADD_MALLOC)
-  SET(CONNECTION_NONE)
-  SET(CONNECTION_TCP)
-  SET(CONNECTION_UDP)
-  SET(PROXY_TYPE_NONE)
-  SET(PROXY_TYPE_HTTP)
-  SET(PROXY_TYPE_SOCKS5)
-  SET(MESSAGE_TYPE_NORMAL)
-  SET(MESSAGE_TYPE_ACTION)
-  SET(SAVEDATA_TYPE_NONE)
-  SET(SAVEDATA_TYPE_TOX_SAVE)
-  SET(SAVEDATA_TYPE_SECRET_KEY)
-  SET(USER_STATUS_NONE)
-  SET(USER_STATUS_AWAY)
-  SET(USER_STATUS_BUSY)
-  SET(FILE_KIND_DATA)
-  SET(FILE_KIND_AVATAR)
-  SET(FILE_CONTROL_RESUME)
-  SET(FILE_CONTROL_PAUSE)
-  SET(FILE_CONTROL_CANCEL)
-  SET(CONFERENCE_TYPE_TEXT)
-  SET(CONFERENCE_TYPE_AV)
-  SET(LOG_LEVEL_TRACE)
-  SET(LOG_LEVEL_DEBUG)
-  SET(LOG_LEVEL_INFO)
-  SET(LOG_LEVEL_WARNING)
-  SET(LOG_LEVEL_ERROR)
+  SET(ERR_FRIEND_ADD_TOO_LONG);
+  SET(ERR_FRIEND_ADD_NO_MESSAGE);
+  SET(ERR_FRIEND_ADD_OWN_KEY);
+  SET(ERR_FRIEND_ADD_ALREADY_SENT);
+  SET(ERR_FRIEND_ADD_NULL);
+  SET(ERR_FRIEND_ADD_BAD_CHECKSUM);
+  SET(ERR_FRIEND_ADD_SET_NEW_NOSPAM);
+  SET(ERR_FRIEND_ADD_MALLOC);
+  SET(CONNECTION_NONE);
+  SET(CONNECTION_TCP);
+  SET(CONNECTION_UDP);
+  SET(PROXY_TYPE_NONE);
+  SET(PROXY_TYPE_HTTP);
+  SET(PROXY_TYPE_SOCKS5);
+  SET(MESSAGE_TYPE_NORMAL);
+  SET(MESSAGE_TYPE_ACTION);
+  SET(SAVEDATA_TYPE_NONE);
+  SET(SAVEDATA_TYPE_TOX_SAVE);
+  SET(SAVEDATA_TYPE_SECRET_KEY);
+  SET(USER_STATUS_NONE);
+  SET(USER_STATUS_AWAY);
+  SET(USER_STATUS_BUSY);
+  SET(FILE_KIND_DATA);
+  SET(FILE_KIND_AVATAR);
+  SET(FILE_CONTROL_RESUME);
+  SET(FILE_CONTROL_PAUSE);
+  SET(FILE_CONTROL_CANCEL);
+  SET(CONFERENCE_TYPE_TEXT);
+  SET(CONFERENCE_TYPE_AV);
+  SET(LOG_LEVEL_TRACE);
+  SET(LOG_LEVEL_DEBUG);
+  SET(LOG_LEVEL_INFO);
+  SET(LOG_LEVEL_WARNING);
+  SET(LOG_LEVEL_ERROR);
 
 #undef SET
 

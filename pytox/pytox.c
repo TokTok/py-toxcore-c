@@ -34,16 +34,29 @@
 #if PY_MAJOR_VERSION >= 3
 extern struct PyModuleDef moduledef;
 struct PyModuleDef moduledef = {
-    PyModuleDef_HEAD_INIT, "pytox", "Python Toxcore module", -1, NULL, NULL, NULL, NULL, NULL};
+    PyModuleDef_HEAD_INIT,
+    "pytox",
+    "Python Toxcore module",
+    -1,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+};
 #endif
 
 #if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit_pytox(void);
-PyMODINIT_FUNC PyInit_pytox(void) {
+#define INIT_FUNC_NAME PyInit_pytox
+#else
+#define INIT_FUNC_NAME initpytox
+#endif
+
+PyMODINIT_FUNC INIT_FUNC_NAME(void);
+PyMODINIT_FUNC INIT_FUNC_NAME(void) {
+#if PY_MAJOR_VERSION >= 3
   PyObject *m = PyModule_Create(&moduledef);
 #else
-PyMODINIT_FUNC initpytox(void);
-PyMODINIT_FUNC initpytox(void) {
   PyObject *m = Py_InitModule("pytox", NULL);
 #endif
 

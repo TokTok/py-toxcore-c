@@ -27,13 +27,13 @@
 #include <Python.h>
 #include <tox/tox.h>
 
-/* ToxAV definition */
-typedef struct {
+/* Tox object definition. */
+typedef struct ToxCore {
   PyObject_HEAD
   Tox *tox;
 } ToxCore;
 
-/* This needs to be extern as it's dynamically loaded by the Python interpreter. */
+/* Used by pytox.c in initialiser. */
 extern PyTypeObject ToxCoreType;
 
 void ToxCore_install_dict(void);

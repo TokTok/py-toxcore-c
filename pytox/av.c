@@ -152,13 +152,14 @@ static void i420_to_rgb(int width, int height, const uint8_t *y, const uint8_t *
 }
 
 static void rgb_to_i420(unsigned char *rgb, vpx_image_t *img) {
-  int upos = 0;
-  int vpos = 0;
-  unsigned int x = 0, i = 0;
-  unsigned int line = 0;
+  unsigned int upos = 0;
+  unsigned int vpos = 0;
+  unsigned int i = 0;
 
+  unsigned int line;
   for (line = 0; line < img->d_h; ++line) {
-    if (!(line % 2)) {
+    if ((line % 2) == 0) {
+      unsigned int x;
       for (x = 0; x < img->d_w; x += 2) {
         uint8_t r = rgb[3 * i];
         uint8_t g = rgb[3 * i + 1];
@@ -175,6 +176,7 @@ static void rgb_to_i420(unsigned char *rgb, vpx_image_t *img) {
         img->planes[VPX_PLANE_Y][i++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16;
       }
     } else {
+      unsigned int x;
       for (x = 0; x < img->d_w; x += 1) {
         uint8_t r = rgb[3 * i];
         uint8_t g = rgb[3 * i + 1];
@@ -192,8 +194,8 @@ static void ToxAVCore_callback_video_receive_frame(ToxAV *toxAV, uint32_t friend
                                                    const uint8_t *v, int32_t ystride,
                                                    int32_t ustride, int32_t vstride,
                                                    void *user_data) {
-  ToxAVCore *self = (ToxAVCore *)user_data;
-  PyGILState_STATE gstate = PyGILState_Ensure();
+  ToxAVCore *const self = (ToxAVCore *)user_data;
+  const PyGILState_STATE gstate = PyGILState_Ensure();
 
   if (self->out_image && (self->o_w != width || self->o_h != height)) {
     free(self->out_image);
@@ -228,9 +230,9 @@ static void ToxAVCore_callback_add_av_groupchat(/*Tox*/ void *tox, uint32_t grou
                                                 uint32_t peernumber, const int16_t *pcm,
                                                 unsigned int samples, uint8_t channels,
                                                 unsigned int sample_rate, void *self) {
-  PyGILState_STATE gstate = PyGILState_Ensure();
+  const PyGILState_STATE gstate = PyGILState_Ensure();
 
-  uint32_t length = samples * channels * 2;
+  const uint32_t length = samples * channels * 2;
 
   PyObject_CallMethod((PyObject *)self, "on_add_av_groupchat", "ii" BUF_TCS "iii", groupnumber,
                       peernumber, pcm, length, samples, channels, sample_rate);
@@ -246,9 +248,9 @@ static void ToxAVCore_callback_join_av_groupchat(/*Tox*/ void *tox, uint32_t gro
                                                  uint32_t peernumber, const int16_t *pcm,
                                                  unsigned int samples, uint8_t channels,
                                                  unsigned int sample_rate, void *self) {
-  PyGILState_STATE gstate = PyGILState_Ensure();
+  const PyGILState_STATE gstate = PyGILState_Ensure();
 
-  uint32_t length = samples * channels * 2;
+  const uint32_t length = samples * channels * 2;
 
   PyObject_CallMethod((PyObject *)self, "on_join_av_groupchat", "ii" BUF_TCS "iii", groupnumber,
                       peernumber, pcm, length, samples, channels, sample_rate);
@@ -260,7 +262,22 @@ static void ToxAVCore_callback_join_av_groupchat(/*Tox*/ void *tox, uint32_t gro
   PyGILState_Release(gstate);
 }
 
-static int init_helper(ToxAVCore *self, PyObject *args) {
+static PyObject *ToxAVCore_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+  PyObject *const obj = type->tp_alloc(type, 0);
+  ToxAVCore *const self = (ToxAVCore *)obj;
+  self->av = NULL;
+  self->out_image = NULL;
+  self->i_w = 0;
+  self->i_h = 0;
+  self->o_w = 0;
+  self->o_h = 0;
+
+  return obj;
+}
+
+static int ToxAVCore_init(PyObject *obj, PyObject *args, PyObject *kwds) {
+  ToxAVCore *const self = (ToxAVCore *)obj;
+
   PyEval_InitThreads();
 
   if (self->av) {
@@ -268,21 +285,22 @@ static int init_helper(ToxAVCore *self, PyObject *args) {
     self->av = NULL;
   }
 
-  PyObject *core = NULL;
-
   if (args == NULL) {
     return 0;
   }
+
+  PyObject *core = NULL;
+
   if (!PyArg_ParseTuple(args, "O", &core)) {
     PyErr_SetString(PyExc_TypeError, "must associate with a core instance");
     return -1;
   }
 
-  self->core = core;
+  self->core = (ToxCore *)core;
   Py_INCREF(self->core);
 
   TOXAV_ERR_NEW err = 0;
-  self->av = toxav_new(((ToxCore *)self->core)->tox, &err);
+  self->av = toxav_new(self->core->tox, &err);
 
   if (self->av == NULL) {
     PyErr_Format(ToxOpError, "failed to allocate toxav %d", err);
@@ -299,40 +317,20 @@ static int init_helper(ToxAVCore *self, PyObject *args) {
   /**
    * NOTE Compatibility with old toxav group calls TODO remove
    */
-  Tox *tox = ((ToxCore *)self->core)->tox;
+  Tox *tox = self->core->tox;
   toxav_add_av_groupchat(tox, ToxAVCore_callback_add_av_groupchat, self);
 
   return 0;
 }
 
-static PyObject *ToxAVCore_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
-  ToxAVCore *self = (ToxAVCore *)type->tp_alloc(type, 0);
-  self->av = NULL;
-  self->out_image = NULL;
-  self->i_w = self->i_h = self->o_w = self->o_h = 0;
+static void ToxAVCore_dealloc(PyObject *obj) {
+  ToxAVCore *const self = (ToxAVCore *)obj;
 
-  if (init_helper(self, NULL) == -1) {
-    return NULL;
-  }
-
-  return (PyObject *)self;
-}
-
-static int ToxAVCore_init(ToxAVCore *self, PyObject *args, PyObject *kwds) {
-  /* since __init__ in Python is optional(superclass need to call it
-   * explicitly), we need to initialize self->tox in ToxAVCore_new instead of
-   * init. If ToxAVCore_init is called, we re-initialize self->tox and pass
-   * the new ipv6enabled setting. */
-  return init_helper(self, args);
-}
-
-static int ToxAVCore_dealloc(ToxAVCore *self) {
   if (self->av) {
     Py_DECREF(self->core);
     toxav_kill(self->av);
     self->av = NULL;
   }
-  return 0;
 }
 
 static PyObject *ToxAVCore_call(ToxAVCore *self, PyObject *args) {
@@ -345,7 +343,7 @@ static PyObject *ToxAVCore_call(ToxAVCore *self, PyObject *args) {
   }
 
   TOXAV_ERR_CALL err = 0;
-  bool ret = toxav_call(self->av, friend_number, audio_bit_rate, video_bit_rate, &err);
+  const bool ret = toxav_call(self->av, friend_number, audio_bit_rate, video_bit_rate, &err);
   if (ret == false) {
     PyErr_Format(ToxOpError, "toxav call error: %d", err);
     return NULL;
@@ -362,7 +360,7 @@ static PyObject *ToxAVCore_call_control(ToxAVCore *self, PyObject *args) {
   }
 
   TOXAV_ERR_CALL_CONTROL err = 0;
-  bool ret = toxav_call_control(self->av, friend_number, control, &err);
+  const bool ret = toxav_call_control(self->av, friend_number, control, &err);
   if (ret == false) {
     PyErr_Format(ToxOpError, "toxav call control error: %d", err);
     return NULL;
@@ -379,7 +377,7 @@ static PyObject *ToxAVCore_audio_set_bit_rate(ToxAVCore *self, PyObject *args) {
   }
 
   TOXAV_ERR_BIT_RATE_SET err = 0;
-  bool ret = toxav_audio_set_bit_rate(self->av, friend_number, audio_bit_rate, &err);
+  const bool ret = toxav_audio_set_bit_rate(self->av, friend_number, audio_bit_rate, &err);
   if (ret == false) {
     PyErr_Format(ToxOpError, "toxav bit rate set error: %d", err);
     return NULL;
@@ -396,7 +394,7 @@ static PyObject *ToxAVCore_video_set_bit_rate(ToxAVCore *self, PyObject *args) {
   }
 
   TOXAV_ERR_BIT_RATE_SET err = 0;
-  bool ret = toxav_video_set_bit_rate(self->av, friend_number, video_bit_rate, &err);
+  const bool ret = toxav_video_set_bit_rate(self->av, friend_number, video_bit_rate, &err);
   if (ret == false) {
     PyErr_Format(ToxOpError, "toxav bit rate set error: %d", err);
     return NULL;
@@ -418,8 +416,8 @@ static PyObject *ToxAVCore_audio_send_frame(ToxAVCore *self, PyObject *args) {
   }
 
   TOXAV_ERR_SEND_FRAME err = 0;
-  bool ret = toxav_audio_send_frame(self->av, friend_number, pcm, sample_count, channels,
-                                    sampling_rate, &err);
+  const bool ret = toxav_audio_send_frame(self->av, friend_number, pcm, sample_count, channels,
+                                          sampling_rate, &err);
   if (ret == false) {
     PyErr_Format(ToxOpError, "toxav audio send frame error: %d", err);
     return NULL;
@@ -449,7 +447,7 @@ static PyObject *ToxAVCore_video_send_frame(ToxAVCore *self, PyObject *args) {
   rgb_to_i420((unsigned char *)data, self->in_image);
 
   TOXAV_ERR_SEND_FRAME err = 0;
-  bool ret =
+  const bool ret =
       toxav_video_send_frame(self->av, friend_number, width, height, self->in_image->planes[0],
                              self->in_image->planes[1], self->in_image->planes[2], &err);
   if (ret == false) {
@@ -469,7 +467,7 @@ static PyObject *ToxAVCore_answer(ToxAVCore *self, PyObject *args) {
   }
 
   TOXAV_ERR_ANSWER err = 0;
-  bool ret = toxav_answer(self->av, friend_number, audio_bit_rate, video_bit_rate, &err);
+  const bool ret = toxav_answer(self->av, friend_number, audio_bit_rate, video_bit_rate, &err);
   if (ret == false) {
     PyErr_Format(ToxOpError, "toxav answer error: %d", err);
     return NULL;
@@ -487,7 +485,7 @@ static PyObject *ToxAVCore_join_av_groupchat(ToxAVCore *self, PyObject *args) {
     return NULL;
   }
 
-  Tox *tox = ((ToxCore *)self->core)->tox;
+  Tox *tox = self->core->tox;
   bool ret = toxav_join_av_groupchat(tox, friend_number, data, length,
                                      ToxAVCore_callback_join_av_groupchat, self);
   if (ret == false) {
@@ -511,7 +509,7 @@ static PyObject *ToxAVCore_group_send_audio(ToxAVCore *self, PyObject *args) {
     return NULL;
   }
 
-  Tox *tox = ((ToxCore *)self->core)->tox;
+  Tox *tox = self->core->tox;
   int ret = toxav_group_send_audio(tox, group_number, pcm, samples, channels, sample_rate);
   if (ret == -1) {
     PyErr_Format(ToxOpError, "toxav group send audio error.");
@@ -523,7 +521,7 @@ static PyObject *ToxAVCore_group_send_audio(ToxAVCore *self, PyObject *args) {
 
 static PyObject *ToxAVCore_get_tox(ToxAVCore *self, PyObject *args) {
   Py_INCREF(self->core);
-  return self->core;
+  return (PyObject *)self->core;
 }
 
 static PyObject *ToxAVCore_iteration_interval(ToxAVCore *self) {
@@ -535,12 +533,6 @@ static PyObject *ToxAVCore_iterate(ToxAVCore *self) {
   toxav_iterate(self->av);
   Py_RETURN_NONE;
 }
-
-#if 0
-static PyObject *ToxAVCore_callback_stub(ToxAVCore *self, PyObject *args) {
-  Py_RETURN_NONE;
-}
-#endif
 
 static PyMethodDef ToxAVCore_methods[] = {
     {
@@ -594,7 +586,7 @@ static PyMethodDef ToxAVCore_methods[] = {
     {
         "iteration_interval", (PyCFunction)ToxAVCore_iteration_interval, METH_VARARGS,
         "iteration_interval()\n"
-        "Returns the interval in milliseconds when the next toxav_iterate call shouldbe.",
+        "Returns the interval in milliseconds when the next toxav_iterate call should be.",
     },
     {
         "iterate", (PyCFunction)ToxAVCore_iterate, METH_VARARGS,
@@ -620,29 +612,30 @@ static PyMethodDef ToxAVCore_methods[] = {
 
 PyTypeObject ToxAVCoreType = {
 #if PY_MAJOR_VERSION >= 3
-    PyVarObject_HEAD_INIT(NULL, 0)
+    PyVarObject_HEAD_INIT(NULL, 0) /* ob_base */
 #else
-    PyObject_HEAD_INIT(NULL) 0, /*ob_size*/
+    PyObject_HEAD_INIT(NULL) /* ob_base */
+    0,                       /* ob_size */
 #endif
-        "ToxAV",                              /*tp_name*/
-    sizeof(ToxAVCore),                        /*tp_basicsize*/
-    0,                                        /*tp_itemsize*/
-    (destructor)ToxAVCore_dealloc,            /*tp_dealloc*/
-    0,                                        /*tp_print*/
-    0,                                        /*tp_getattr*/
-    0,                                        /*tp_setattr*/
-    0,                                        /*tp_compare*/
-    0,                                        /*tp_repr*/
-    0,                                        /*tp_as_number*/
-    0,                                        /*tp_as_sequence*/
-    0,                                        /*tp_as_mapping*/
-    0,                                        /*tp_hash */
-    0,                                        /*tp_call*/
-    0,                                        /*tp_str*/
-    0,                                        /*tp_getattro*/
-    0,                                        /*tp_setattro*/
-    0,                                        /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    "ToxAV",                                  /* tp_name */
+    sizeof(ToxAVCore),                        /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    ToxAVCore_dealloc,                        /* tp_dealloc */
+    0,                                        /* tp_print */
+    0,                                        /* tp_getattr */
+    0,                                        /* tp_setattr */
+    0,                                        /* tp_compare */
+    0,                                        /* tp_repr */
+    0,                                        /* tp_as_number */
+    0,                                        /* tp_as_sequence */
+    0,                                        /* tp_as_mapping */
+    0,                                        /* tp_hash  */
+    0,                                        /* tp_call */
+    0,                                        /* tp_str */
+    0,                                        /* tp_getattro */
+    0,                                        /* tp_setattro */
+    0,                                        /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
     "ToxAV object",                           /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
@@ -658,16 +651,16 @@ PyTypeObject ToxAVCoreType = {
     0,                                        /* tp_descr_get */
     0,                                        /* tp_descr_set */
     0,                                        /* tp_dictoffset */
-    (initproc)ToxAVCore_init,                 /* tp_init */
+    ToxAVCore_init,                           /* tp_init */
     0,                                        /* tp_alloc */
     ToxAVCore_new,                            /* tp_new */
 };
 
-void ToxAVCore_install_dict() {
+void ToxAVCore_install_dict(void) {
 #define SET(name)                                       \
   PyObject *obj_##name = PyLong_FromLong(TOXAV_##name); \
   PyDict_SetItemString(dict, #name, obj_##name);        \
-  Py_DECREF(obj_##name);
+  Py_DECREF(obj_##name)
 
   PyObject *dict = PyDict_New();
   SET(FRIEND_CALL_STATE_ERROR);

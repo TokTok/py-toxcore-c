@@ -28,18 +28,20 @@
 #include <tox/toxav.h>
 #include <vpx/vpx_image.h>
 
-/* ToxAV definition */
-typedef struct {
+/* ToxAV object definition. */
+typedef struct ToxAVCore {
   PyObject_HEAD
-  PyObject *core;
+  struct ToxCore *core;
   ToxAV *av;
-  uint32_t i_w, i_h;
+  uint32_t i_w;
+  uint32_t i_h;
   unsigned char *out_image;
-  uint32_t o_w, o_h;
+  uint32_t o_w;
+  uint32_t o_h;
   vpx_image_t *in_image;
 } ToxAVCore;
 
-/* This needs to be extern as it's dynamically loaded by the Python interpreter. */
+/* Used by pytox.c in initialiser. */
 extern PyTypeObject ToxAVCoreType;
 
 void ToxAVCore_install_dict(void);
