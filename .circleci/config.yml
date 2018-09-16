@@ -1,50 +1,51 @@
+---
 version: 2
 
 workflows:
   version: 2
   build_linux:
     jobs:
-    - asan
+      - asan
 
 jobs:
   asan:
     working_directory: ~/work
     docker:
-    - image: ubuntu
+      - image: ubuntu
 
     steps:
-    - checkout
-    - run: apt update
-    - run: apt install -y --no-install-recommends
-             gcc
-             g++
-             cmake
-             git
-             libopus-dev
-             libsodium-dev
-             libvpx-dev
-             ninja-build
-             pkg-config
-             python3.6-dev
-             python3-setuptools
-    - run: git clone --depth=1 git://github.com/TokTok/c-toxcore
-    - run: cd c-toxcore;
-           . .travis/flags-gcc.sh;
-           add_flag -fsanitize=address;
-           cmake -H. -B_build -GNinja
-             -DCMAKE_C_FLAGS="$C_FLAGS"
-             -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
-             -DCMAKE_EXE_LINKER_FLAGS="$LD_FLAGS"
-             -DCMAKE_SHARED_LINKER_FLAGS="$LD_FLAGS"
-             -DCMAKE_INSTALL_PREFIX:PATH="$PWD/_install"
-             -DENABLE_STATIC=OFF
-             -DTRACE=ON
-             -DMUST_BUILD_TOXAV=ON
-    - run: cd c-toxcore/_build && ninja install -j$(nproc)
-    - run: export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address";
-           export LDFLAGS="-L$PWD/c-toxcore/_install/lib -Wl,-rpath,$PWD/c-toxcore/_install/lib";
-           python3 setup.py build_ext --inplace
-    - run: ASAN_OPTIONS=detect_leaks=0
-           LD_PRELOAD=libasan.so.4
-           PYTHONPATH=.
-           python3 tests/tests.py
+      - checkout
+      - run: apt update
+      - run: apt install -y --no-install-recommends
+               gcc
+               g++
+               cmake
+               git
+               libopus-dev
+               libsodium-dev
+               libvpx-dev
+               ninja-build
+               pkg-config
+               python3.6-dev
+               python3-setuptools
+      - run: git clone --depth=1 git://github.com/TokTok/c-toxcore
+      - run: cd c-toxcore;
+             . .travis/flags-gcc.sh;
+             add_flag -fsanitize=address;
+             cmake -H. -B_build -GNinja
+               -DCMAKE_C_FLAGS="$C_FLAGS"
+               -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
+               -DCMAKE_EXE_LINKER_FLAGS="$LD_FLAGS"
+               -DCMAKE_SHARED_LINKER_FLAGS="$LD_FLAGS"
+               -DCMAKE_INSTALL_PREFIX:PATH="$PWD/_install"
+               -DENABLE_STATIC=OFF
+               -DTRACE=ON
+               -DMUST_BUILD_TOXAV=ON
+      - run: cd c-toxcore/_build && ninja install -j$(nproc)
+      - run: export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address";
+             export LDFLAGS="-L$PWD/c-toxcore/_install/lib -Wl,-rpath,$PWD/c-toxcore/_install/lib";
+             python3 setup.py build_ext --inplace
+      - run: ASAN_OPTIONS=detect_leaks=0
+             LD_PRELOAD=libasan.so.4
+             PYTHONPATH=.
+             python3 tests/tests.py
