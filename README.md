@@ -5,16 +5,20 @@
 
 Python binding for [Project Tox](https://github.com/TokTok/c-toxcore).
 
-Docker hub: <https://hub.docker.com/r/tetsaicn/pytox/> Download docker
-images:docker pull tetsaicn/pytox Dockerfile: CN:Dockerfile-cn
-other:Dockerfile
+Docker hub: <https://hub.docker.com/r/toxchat/py-toxcore-c/>
+
+```sh
+docker pull toxchat/py-toxcore-c
+```
 
 PyTox provides a Pythonic binding, i.e Object-oriented instead of C
 style, raise exception instead of returning error code. A simple example
 is as follows:
 
-``` sourceCode python
-class ToxOptions():
+```python
+from pytox import Tox
+
+class ToxOptions(object):
     def __init__(self):
         self.ipv6_enabled = True
         self.udp_enabled = True
@@ -48,6 +52,9 @@ class EchoBot(Tox):
         print '%s: %s' % (name, message)
         print 'EchoBot: %s' % message
         self.friend_send_message(fid, Tox.MESSAGE_TYPE_NORMAL, message)
+
+
+EchoBot(ToxOptions()).loop()
 ```
 
 As you can see callbacks are mapped into class method instead of using
