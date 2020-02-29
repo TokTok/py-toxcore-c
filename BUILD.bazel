@@ -22,6 +22,6 @@ cc_binary(
     deps = [
         "pytox.ld",
         "//c-toxcore",
-        "@python2//:python",
+        "@python3//:python",
     ],
 )
