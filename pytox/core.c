@@ -30,14 +30,14 @@
 # define BUF_TC "y"
 #endif
 
-static void callback_log(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line, const char *func,
+static void callback_log(Tox *tox, Tox_Log_Level level, const char *file, uint32_t line, const char *func,
                          const char *message, void* self)
 {
     PyObject_CallMethod((PyObject*)self, "on_log", "isiss", level, file, line,
                         func, message);
 }
 
-static void callback_self_connection_status(Tox* tox, TOX_CONNECTION connection_status,
+static void callback_self_connection_status(Tox* tox, Tox_Connection connection_status,
                                             void *self)
 {
     PyObject_CallMethod((PyObject*)self, "on_self_connection_status", "i",
@@ -56,7 +56,7 @@ static void callback_friend_request(Tox* tox, const uint8_t* public_key,
       length - (data[length - 1] == 0));
 }
 
-static void callback_friend_message(Tox *tox, uint32_t friendnumber, TOX_MESSAGE_TYPE type,
+static void callback_friend_message(Tox *tox, uint32_t friendnumber, Tox_Message_Type type,
                                     const uint8_t* message, size_t length, void* self)
 {
     PyObject_CallMethod((PyObject*)self, "on_friend_message", "iis#", friendnumber, type,
@@ -77,7 +77,7 @@ static void callback_friend_status_message(Tox *tox, uint32_t friendnumber,
       newstatus, length - (newstatus[length - 1] == 0));
 }
 
-static void callback_friend_status(Tox *tox, uint32_t friendnumber, TOX_USER_STATUS status,
+static void callback_friend_status(Tox *tox, uint32_t friendnumber, Tox_User_Status status,
                                    void* self)
 {
   PyObject_CallMethod((PyObject*)self, "on_friend_status", "ii", friendnumber,
@@ -99,13 +99,13 @@ static void callback_friend_read_receipt(Tox *tox, uint32_t friendnumber,
 }
 
 static void callback_friend_connection_status(Tox *tox, uint32_t friendnumber,
-    TOX_CONNECTION status, void* self)
+    Tox_Connection status, void* self)
 {
   PyObject_CallMethod((PyObject*)self, "on_friend_connection_status", "iO",
       friendnumber, PyBool_FromLong(status));
 }
 
-static void callback_conference_invite(Tox *tox, uint32_t friendnumber, TOX_CONFERENCE_TYPE type,
+static void callback_conference_invite(Tox *tox, uint32_t friendnumber, Tox_Conference_Type type,
     const uint8_t *data, size_t length, void *self)
 {
   PyObject_CallMethod((PyObject*)self, "on_conference_invite", "ii" BUF_TC "#",
@@ -113,7 +113,7 @@ static void callback_conference_invite(Tox *tox, uint32_t friendnumber, TOX_CONF
 }
 
 static void callback_conference_message(Tox *tox, uint32_t conference_number,
-    uint32_t peer_number, TOX_MESSAGE_TYPE type, const uint8_t* message, size_t length, void *self)
+    uint32_t peer_number, Tox_Message_Type type, const uint8_t* message, size_t length, void *self)
 {
   PyObject_CallMethod((PyObject*)self, "on_conference_message", "iiis#", conference_number,
       peer_number, type, message, length - (message[length - 1] == 0));
@@ -159,7 +159,7 @@ static void callback_file_recv(Tox *tox, uint32_t friend_number, uint32_t file_n
 }
 
 static void callback_file_recv_control(Tox *tox, uint32_t friend_number, uint32_t file_number,
-                                       TOX_FILE_CONTROL control, void *self)
+                                       Tox_File_Control control, void *self)
 {
     PyObject_CallMethod((PyObject*)self, "on_file_recv_control", "iii",
                         friend_number, file_number, control);
@@ -266,7 +266,7 @@ static int init_helper(ToxCore* self, PyObject* args)
       init_options(self, opts, options, &savedata_data, &proxy_host);
   }
 
-  TOX_ERR_NEW err = 0;
+  Tox_Err_New err = 0;
   Tox* tox = tox_new(options, &err);
   free(savedata_data);
   free(proxy_host);
@@ -363,7 +363,7 @@ ToxCore_friend_add(ToxCore* self, PyObject* args)
   uint8_t pk[TOX_ADDRESS_SIZE];
   hex_string_to_bytes(address, TOX_ADDRESS_SIZE, pk);
 
-  TOX_ERR_FRIEND_ADD err = 0;
+  Tox_Err_Friend_Add err = 0;
   uint32_t friend_number = 0;
   friend_number = tox_friend_add(self->tox, pk, data, data_length, &err);
   int success = friend_number == UINT32_MAX ? 0 : 1;
@@ -424,7 +424,7 @@ ToxCore_friend_add_norequest(ToxCore* self, PyObject* args)
   uint8_t pk[TOX_ADDRESS_SIZE];
   hex_string_to_bytes(address, TOX_ADDRESS_SIZE, pk);
 
-  TOX_ERR_FRIEND_ADD err = 0;
+  Tox_Err_Friend_Add err = 0;
   int res = tox_friend_add_norequest(self->tox, pk, &err);
   if (res == -1) {
     PyErr_Format(ToxOpError, "failed to add friend: %d", err);
@@ -550,8 +550,8 @@ ToxCore_friend_send_message(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_MESSAGE_TYPE type = msg_type;
-  TOX_ERR_FRIEND_SEND_MESSAGE errmsg = 0;
+  Tox_Message_Type type = msg_type;
+  Tox_Err_Friend_Send_Message errmsg = 0;
   uint32_t ret = tox_friend_send_message(self->tox, friend_num, type, message, length, &errmsg);
   if (ret == 0) {
      PyErr_SetString(ToxOpError, "failed to send message");
@@ -881,7 +881,7 @@ ToxCore_conference_new(ToxCore* self, PyObject* args)
 {
   CHECK_TOX(self);
 
-  TOX_ERR_CONFERENCE_NEW error;
+  Tox_Err_Conference_New error;
   uint32_t conference_number = tox_conference_new(self->tox, &error);
   if (error != TOX_ERR_CONFERENCE_NEW_OK) {
     PyErr_SetString(ToxOpError, "failed to create conference");
@@ -901,7 +901,7 @@ ToxCore_conference_delete(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_DELETE error;
+  Tox_Err_Conference_Delete error;
   tox_conference_delete(self->tox, conference_number, &error);
   if (error != TOX_ERR_CONFERENCE_DELETE_OK) {
     PyErr_SetString(ToxOpError, "failed to delete conference");
@@ -947,7 +947,7 @@ ToxCore_conference_get_title(ToxCore* self, PyObject* args)
   uint8_t buf[TOX_MAX_NAME_LENGTH];
   memset(buf, 0, TOX_MAX_NAME_LENGTH);
 
-  TOX_ERR_CONFERENCE_TITLE error;
+  Tox_Err_Conference_Title error;
   tox_conference_get_title(self->tox, conference_number, buf, &error);
   if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
     return PYSTRING_FromString("");  /* no title. */
@@ -969,7 +969,7 @@ ToxCore_conference_set_title(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_TITLE error;
+  Tox_Err_Conference_Title error;
   tox_conference_set_title(self->tox, conference_number, title, length, &error);
   if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
     PyErr_SetString(ToxOpError, "failed to set the conference title");
@@ -988,8 +988,8 @@ ToxCore_conference_get_type(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_GET_TYPE error;
-  TOX_CONFERENCE_TYPE type = tox_conference_get_type(self->tox, conference_number, &error);
+  Tox_Err_Conference_Get_Type error;
+  Tox_Conference_Type type = tox_conference_get_type(self->tox, conference_number, &error);
   if (error != TOX_ERR_CONFERENCE_GET_TYPE_OK) {
     PyErr_SetString(ToxOpError, "failed to get conference type");
   }
@@ -1011,7 +1011,7 @@ ToxCore_conference_peer_get_name(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_PEER_QUERY error;
+  Tox_Err_Conference_Peer_Query error;
   tox_conference_peer_get_name(self->tox, conference_number,
       peer_number, buf, &error);
   if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
@@ -1032,7 +1032,7 @@ ToxCore_conference_invite(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_INVITE error;
+  Tox_Err_Conference_Invite error;
   tox_conference_invite(self->tox, friend_number, conference_number, &error);
   if (error != TOX_ERR_CONFERENCE_INVITE_OK) {
     PyErr_SetString(ToxOpError, "failed to invite friend");
@@ -1054,7 +1054,7 @@ ToxCore_conference_join(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_JOIN error;
+  Tox_Err_Conference_Join error;
   uint32_t ret = tox_conference_join(self->tox, friend_number, cookie, length,
       &error);
   if (error != TOX_ERR_CONFERENCE_JOIN_OK) {
@@ -1078,7 +1078,7 @@ ToxCore_conference_send_message(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_SEND_MESSAGE error;
+  Tox_Err_Conference_Send_Message error;
   tox_conference_send_message(self->tox, conference_number, type, message, length, &error);
   if (error != TOX_ERR_CONFERENCE_SEND_MESSAGE_OK) {
     PyErr_SetString(ToxOpError, "failed to send conference message");
@@ -1099,7 +1099,7 @@ ToxCore_conference_peer_number_is_ours(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_PEER_QUERY error;
+  Tox_Err_Conference_Peer_Query error;
   bool ret = tox_conference_peer_number_is_ours(self->tox, conference_number, peer_number, &error);
   if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
     PyErr_SetString(ToxOpError, "failed to check if peer number is ours");
@@ -1119,7 +1119,7 @@ ToxCore_conference_peer_count(ToxCore* self, PyObject* args)
     return NULL;
   }
 
-  TOX_ERR_CONFERENCE_PEER_QUERY error;
+  Tox_Err_Conference_Peer_Query error;
   uint32_t count = tox_conference_peer_count(self->tox, conference_number, &error);
   if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
     PyErr_SetString(ToxOpError, "failed to get conference peer count");
@@ -1181,7 +1181,7 @@ ToxCore_file_send(ToxCore* self, PyObject*args)
         return NULL;
     }
 
-    TOX_ERR_FILE_SEND err = 0;
+    Tox_Err_File_Send err = 0;
     uint32_t file_number =
         tox_file_send(self->tox, friend_number, kind, file_size, file_id, filename, filename_length, &err);
     if (file_number == UINT32_MAX) {
@@ -1228,7 +1228,7 @@ ToxCore_file_send_chunk(ToxCore* self, PyObject* args)
         return NULL;
     }
 
-    TOX_ERR_FILE_SEND_CHUNK err = 0;
+    Tox_Err_File_Send_Chunk err = 0;
     bool ret = tox_file_send_chunk(self->tox, friend_number, file_number, position,
                                    data, length, &err);
     if (!ret) {
@@ -1251,7 +1251,7 @@ ToxCore_file_seek(ToxCore* self, PyObject* args)
         return NULL;
     }
 
-    TOX_ERR_FILE_SEEK err = 0;
+    Tox_Err_File_Seek err = 0;
     bool ret = tox_file_seek(self->tox, friend_number, file_number, position, &err);
 
     if (!ret) {
@@ -1279,7 +1279,7 @@ ToxCore_file_get_file_id(ToxCore* self, PyObject* args)
     uint8_t hex[TOX_FILE_ID_LENGTH * 2 + 1];
     memset(hex, 0, TOX_FILE_ID_LENGTH * 2 + 1);
 
-    TOX_ERR_FILE_GET err = 0;
+    Tox_Err_File_Get err = 0;
     bool ret = tox_file_get_file_id(self->tox, friend_number, file_number, file_id, &err);
     if (!ret) {
         PyErr_Format(ToxOpError, "tox_file_get_file_id() failed: %d", err);
@@ -1310,7 +1310,7 @@ ToxCore_self_get_udp_port(ToxCore* self, PyObject* args)
 {
     CHECK_TOX(self);
 
-    TOX_ERR_GET_PORT err;
+    Tox_Err_Get_Port err;
     uint16_t nospam = tox_self_get_udp_port(self->tox, &err);
     if (err != TOX_ERR_GET_PORT_OK) {
         PyErr_Format(ToxOpError, "tox_self_get_udp_port() failed: %d", err);
@@ -1428,7 +1428,7 @@ ToxCore_self_get_connection_status(ToxCore* self, PyObject* args)
 {
   CHECK_TOX(self);
 
-  TOX_CONNECTION conn = tox_self_get_connection_status(self->tox);
+  Tox_Connection conn = tox_self_get_connection_status(self->tox);
 
   return PyLong_FromLong(conn);
 }

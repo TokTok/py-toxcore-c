@@ -297,7 +297,7 @@ static int init_helper(ToxAVCore *self, PyObject* args)
     self->core = core;
     Py_INCREF(self->core);
 
-    TOXAV_ERR_NEW err = 0;
+    Toxav_Err_New err = 0;
     self->av = toxav_new(((ToxCore*)self->core)->tox, &err);
 
     if (self->av == NULL) {
@@ -368,7 +368,7 @@ ToxAVCore_call(ToxAVCore *self, PyObject* args)
         return NULL;
     }
 
-    TOXAV_ERR_CALL err = 0;
+    Toxav_Err_Call err = 0;
     bool ret = toxav_call(self->av, friend_number, audio_bit_rate, video_bit_rate, &err);
     if (ret == false) {
         PyErr_Format(ToxOpError, "toxav call error: %d", err);
@@ -387,7 +387,7 @@ ToxAVCore_call_control(ToxAVCore *self, PyObject* args)
         return NULL;
     }
 
-    TOXAV_ERR_CALL_CONTROL err = 0;
+    Toxav_Err_Call_Control err = 0;
     bool ret = toxav_call_control(self->av, friend_number, control, &err);
     if (ret == false) {
         PyErr_Format(ToxOpError, "toxav call control error: %d", err);
@@ -406,7 +406,7 @@ ToxAVCore_audio_set_bit_rate(ToxAVCore *self, PyObject* args)
         return NULL;
     }
 
-    TOXAV_ERR_BIT_RATE_SET err = 0;
+    Toxav_Err_Bit_Rate_Set err = 0;
     bool ret = toxav_audio_set_bit_rate(self->av, friend_number, audio_bit_rate, &err);
     if (ret == false) {
         PyErr_Format(ToxOpError, "toxav bit rate set error: %d", err);
@@ -425,7 +425,7 @@ ToxAVCore_video_set_bit_rate(ToxAVCore *self, PyObject* args)
         return NULL;
     }
 
-    TOXAV_ERR_BIT_RATE_SET err = 0;
+    Toxav_Err_Bit_Rate_Set err = 0;
     bool ret = toxav_video_set_bit_rate(self->av, friend_number, video_bit_rate, &err);
     if (ret == false) {
         PyErr_Format(ToxOpError, "toxav bit rate set error: %d", err);
@@ -449,7 +449,7 @@ ToxAVCore_audio_send_frame(ToxAVCore *self, PyObject* args)
         return NULL;
     }
 
-    TOXAV_ERR_SEND_FRAME err = 0;
+    Toxav_Err_Send_Frame err = 0;
     bool ret = toxav_audio_send_frame(self->av, friend_number, pcm,
                                       sample_count, channels, sampling_rate, &err);
     if (ret == false) {
@@ -483,7 +483,7 @@ ToxAVCore_video_send_frame(ToxAVCore *self, PyObject* args)
 
     rgb_to_i420((unsigned char*)data, self->in_image);
 
-    TOXAV_ERR_SEND_FRAME err = 0;
+    Toxav_Err_Send_Frame err = 0;
     bool ret = toxav_video_send_frame(self->av, friend_number, width, height,
                                       self->in_image->planes[0],
                                       self->in_image->planes[1],
@@ -508,7 +508,7 @@ ToxAVCore_answer(ToxAVCore *self, PyObject* args)
         return NULL;
     }
 
-    TOXAV_ERR_ANSWER err = 0;
+    Toxav_Err_Answer err = 0;
     bool ret = toxav_answer(self->av, friend_number, audio_bit_rate, video_bit_rate, &err);
     if (ret == false) {
         PyErr_Format(ToxOpError, "toxav answer error: %d", err);
