@@ -727,7 +727,7 @@ void ToxAVCore_install_dict(void)
 #define SET(name)                                           \
     PyObject* obj_##name = PyLong_FromLong(TOXAV_##name);   \
     PyDict_SetItemString(dict, #name, obj_##name);          \
-    Py_DECREF(obj_##name);
+    Py_DECREF(obj_##name)
 
     PyObject* dict = PyDict_New();
     SET(FRIEND_CALL_STATE_ERROR);

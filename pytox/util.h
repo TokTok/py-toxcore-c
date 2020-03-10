@@ -28,11 +28,11 @@
 
 extern PyObject* ToxOpError;
 
-#define CHECK_TOX(self)                                             \
-  if ((self)->tox == NULL) {                                        \
+#define CHECK_TOX(SELF)                                             \
+  do { if ((SELF)->tox == NULL) {                                   \
     PyErr_SetString(ToxOpError, "toxcore object not initialised."); \
     return NULL;                                                    \
-  }
+  } } while (0)
 
 #if PY_MAJOR_VERSION < 3
   #define PYSTRING_FromString PyString_FromString
