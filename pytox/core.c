@@ -176,12 +176,14 @@ static void callback_file_recv_chunk(Tox *tox, uint32_t friend_number, uint32_t 
 static void init_options(ToxCore* self, PyObject* pyopts, struct Tox_Options* tox_opts,
                          uint8_t **savedata_data, char **proxy_host)
 {
-    char *buf = NULL;
+    const char *buf = NULL;
     Py_ssize_t sz = 0;
     PyObject *p = NULL;
 
     p = PyObject_GetAttrString(pyopts, "savedata_data");
-    PyBytes_AsStringAndSize(p, &buf, &sz);
+    char *mbuf = NULL;
+    PyBytes_AsStringAndSize(p, &mbuf, &sz);
+    buf = mbuf;
     if (sz > 0) {
         *savedata_data = calloc(1, sz);
         memcpy(*savedata_data, buf, sz);

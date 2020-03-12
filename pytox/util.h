@@ -52,7 +52,7 @@ void bytes_to_hex_string(const uint8_t* digest, int length, uint8_t* hex_digest)
 
 void hex_string_to_bytes(uint8_t* hexstr, int length, uint8_t* bytes);
 
-void PyStringUnicode_AsStringAndSize(PyObject* object, char** str,
+void PyStringUnicode_AsStringAndSize(PyObject* object, const char** str,
     Py_ssize_t* len);
 
 #endif /* PYTOX_UTIL_H */
