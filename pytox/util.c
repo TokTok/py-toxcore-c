@@ -69,7 +69,9 @@ void PyStringUnicode_AsStringAndSize(PyObject* object, const char** str,
     Py_ssize_t* len)
 {
 #if PY_MAJOR_VERSION < 3
-    PyString_AsStringAndSize(object, str, len);
+    char *mstr;
+    PyString_AsStringAndSize(object, &mstr, len);
+    *str = mstr;
 #else
 # if PY_MINOR_VERSION == 2
     *str = (char *)PyUnicode_AS_DATA(object);

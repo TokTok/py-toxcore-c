@@ -1,5 +1,5 @@
-FROM ubuntu:16.04
-MAINTAINER iphydf@gmail.com
+FROM ubuntu:18.04
+LABEL maintainer="iphydf@gmail.com"
 
 RUN apt-get update \
  && apt-get install --no-install-recommends -y ca-certificates cmake gcc g++ git libopus-dev libsodium-dev libvpx-dev pkg-config python-dev \
@@ -11,7 +11,7 @@ COPY pytox /build/pytox/
 
 WORKDIR /build
 RUN git clone https://github.com/TokTok/c-toxcore /build/c-toxcore \
- && cmake -B/build/c-toxcore/_build -H/build/c-toxcore -DBOOTSTRAP_DAEMON=OFF \
+ && cmake -B/build/c-toxcore/_build -H/build/c-toxcore -DBOOTSTRAP_DAEMON=OFF -DMUST_BUILD_TOXAV=ON \
  && make -C/build/c-toxcore/_build install -j"$(nproc)" \
  && python setup.py install \
  && rm -r /build/*

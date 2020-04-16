@@ -1,13 +1,23 @@
 import os
+import shlex
+import subprocess  # nosec
 
 from distutils.core import setup, Extension
 
-def supports_av():
-    os.system("""
-    echo 'extern int toxav_new(); int (*x)() = &toxav_new; int main(){}' \\
-      | cc $LDFLAGS -xc - -ltoxcore \\
-      > /dev/null 2>&1
-    """)
+TOXAV_TEST_CODE = b"""
+extern int toxav_new();
+int (*x)() = &toxav_new;
+int main(){}
+"""
+
+def supports_av(libs):
+    ldflags = shlex.split(os.environ.get("LDFLAGS", ""))
+    proc = subprocess.Popen(  # nosec
+        ["cc", "-xc", "-"] + ldflags + libs,
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # Wait for process to terminate; ignore stdout/stderr.
+    proc.communicate(TOXAV_TEST_CODE)
+
     if os.path.exists("a.out"):
         os.remove("a.out")
         return True
@@ -30,9 +40,13 @@ cflags = [
   "-fno-strict-aliasing",
 ]
 
-if supports_av():
+if supports_av(["-ltoxcore"]):
     sources.append("pytox/av.c")
     cflags.append("-DENABLE_AV")
+elif supports_av(["-ltoxcore", "-ltoxav"]):
+    sources.append("pytox/av.c")
+    cflags.append("-DENABLE_AV")
+    libraries.append("toxav")
 else:
     print("Warning: AV support not found, disabled.")
 
