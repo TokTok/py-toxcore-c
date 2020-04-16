@@ -1,7 +1,9 @@
-build/
+/build
+/_build
+/compile
+/dist
+/MANIFEST
 .*.swp
 *.so
 *.o
-./compile
-_build
 .tox

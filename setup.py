@@ -37,7 +37,7 @@ else:
     print("Warning: AV support not found, disabled.")
 
 setup(
-    name="PyTox",
+    name="py-toxcore-c",
     version="0.2.0",
     description="Python binding for Tox the skype replacement",
     author="Wei-Ning Huang (AZ)",
