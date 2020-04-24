@@ -1,0 +1,22 @@
+---
+_extends: template
+
+repository:
+  name: py-toxcore-c
+  description: Python binding for Project-Tox the skype replacement.
+  topics: toxcore, python, ffi
+  has_issues: true
+
+branches:
+  - name: "master"
+    protection:
+      required_status_checks:
+        contexts:
+          - Codacy/PR Quality Review
+          - CodeFactor
+          - Docker Build
+          - Travis CI - Pull Request
+          - WIP
+          - code-review/reviewable
+          - coverage/coveralls
+          - license/cla
