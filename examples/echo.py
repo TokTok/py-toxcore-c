@@ -31,9 +31,9 @@ from time import sleep
 from os.path import exists
 
 SERVER = [
-    "biribiri.org",
+    "tox.initramfs.io",
     33445,
-    "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67"
+    "3F0A45A268367C1BEA652F258C85F4A66DA76BCAA667A49E770BCC4917AB6A25"
 ]
 
 DATA = 'echo.data'
