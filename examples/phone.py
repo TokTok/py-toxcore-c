@@ -130,9 +130,8 @@ class AV(ToxAV):
         self.stop = True
         if self.ae_thread:
             self.ae_thread.join()
-        if self.call_type == self.TypeVideo:
-            if self.ve_thread:
-                self.ve_thread.join()
+        if self.call_type == self.TypeVideo and self.ve_thread:
+            self.ve_thread.join()
 
         self.kill_transmission(idx)
         print("Call ended")
@@ -261,9 +260,6 @@ class Phone(Tox):
 
                 if readable:
                     args = sys.stdin.readline().strip().split()
-                    if not args:
-                        pass
-
                     if args[0] == "add":
                         try:
                             self.friend_add(args[1], "Hi")
@@ -272,8 +268,6 @@ class Phone(Tox):
                         print('Friend added')
                     elif args[0] == "msg":
                         try:
-                            if len(args) <= 2:
-                                pass
                             friend_number = int(args[1])
                             msg = ' '.join(args[2:])
                             self.friend_send_message(friend_number,

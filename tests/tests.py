@@ -115,7 +115,7 @@ class ToxTest(unittest.TestCase):
         t:iteration_interval
         """
         interval = self.bob.iteration_interval()
-        for i in range(n):
+        for _ in range(n):
             self.alice.iterate()
             self.bob.iterate()
             sleep(interval / 2000.0)
@@ -127,10 +127,7 @@ class ToxTest(unittest.TestCase):
         """
 
         def on_self_connection_status(self, status):
-            if status != Tox.CONNECTION_NONE:
-                self.mycon_status = True
-            else:
-                self.mycon_status = False
+            self.mycon_status = True if status != Tox.CONNECTION_NONE else False
             assert self.self_get_connection_status() == status
 
         self.alice.mycon_status = False
@@ -160,7 +157,7 @@ class ToxTest(unittest.TestCase):
         count = 0
         THRESHOLD = 400
 
-        while not all([getattr(obj, attr) for attr in attrs]):
+        while not all(getattr(obj, attr) for attr in attrs):
             self.loop(50)
             if count >= THRESHOLD:
                 return False
@@ -731,7 +728,6 @@ class ToxTest(unittest.TestCase):
                 CONTEXT['START'] = True
             elif control == Tox.FILE_CONTROL_CANCEL:
                 self.completed = True
-                pass
 
         def on_file_chunk_request(self, fid, file_number, position, length):
             if length == 0:
@@ -759,8 +755,7 @@ class ToxTest(unittest.TestCase):
         BobTox.on_file_chunk_request = Tox.on_file_chunk_request
 
 if __name__ == '__main__':
-    methods = set([x for x in dir(Tox)
-                  if not x[0].isupper() and not x[0] == '_'])
+    methods = {x for x in dir(Tox) if not x[0].isupper() and x[0] != '_'}
     docs = "".join([getattr(ToxTest, x).__doc__ for x in dir(ToxTest)
                     if getattr(ToxTest, x).__doc__ is not None])
 

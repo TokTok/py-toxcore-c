@@ -75,8 +75,6 @@ class AV(ToxAV):
         sys.stdout.flush()
         bret = self.audio_send_frame(fid, pcm, sample_count,
                                      channels, sampling_rate)
-        if bret is False:
-            pass
 
     def on_video_receive_frame(self, fid, width, height, frame):
         # print('video frame: %d, %d, %d, ' % (fid, width, height))
@@ -85,7 +83,6 @@ class AV(ToxAV):
         bret = self.video_send_frame(fid, width, height, frame)
         if bret is False:
             print('video send frame error.')
-            pass
 
     def witerate(self):
         self.iterate()
