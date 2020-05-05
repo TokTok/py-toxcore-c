@@ -33,10 +33,10 @@ from os.path import exists
 SERVER = [
     "tox.initramfs.io",
     33445,
-    "3F0A45A268367C1BEA652F258C85F4A66DA76BCAA667A49E770BCC4917AB6A25"
+    "3F0A45A268367C1BEA652F258C85F4A66DA76BCAA667A49E770BCC4917AB6A25",
 ]
 
-DATA = 'echo.data'
+DATA = "echo.data"
 
 # echo.py features
 # - accept friend request
@@ -52,65 +52,69 @@ class AV(ToxAV):
         self.core = self.get_tox()
 
     def on_call(self, fid, audio_enabled, video_enabled):
-        print("Incoming %s call from %d:%s ..." % (
-            "video" if video_enabled else "audio", fid,
-            self.core.friend_get_name(fid)))
+        print(
+            "Incoming %s call from %d:%s ..."
+            % (
+                "video" if video_enabled else "audio",
+                fid,
+                self.core.friend_get_name(fid),
+            )
+        )
         bret = self.answer(fid, 48, 64)
         print("Answered, in call..." + str(bret))
 
     def on_call_state(self, fid, state):
-        print('call state:fn=%d, state=%d' % (fid, state))
+        print("call state:fn=%d, state=%d" % (fid, state))
 
-    def on_bit_rate_status(self, fid,
-                           audio_bit_rate, video_bit_rate):
-        print('bit rate status: fn=%d, abr=%d, vbr=%d' %
-              (fid, audio_bit_rate, video_bit_rate))
+    def on_bit_rate_status(self, fid, audio_bit_rate, video_bit_rate):
+        print(
+            "bit rate status: fn=%d, abr=%d, vbr=%d"
+            % (fid, audio_bit_rate, video_bit_rate)
+        )
 
-    def on_audio_receive_frame(self, fid, pcm, sample_count,
-                               channels, sampling_rate):
+    def on_audio_receive_frame(self, fid, pcm, sample_count, channels, sampling_rate):
         # print('audio frame: %d, %d, %d, %d' %
         #      (fid, sample_count, channels, sampling_rate))
         # print('pcm len:%d, %s' % (len(pcm), str(type(pcm))))
-        sys.stdout.write('.')
+        sys.stdout.write(".")
         sys.stdout.flush()
-        bret = self.audio_send_frame(fid, pcm, sample_count,
-                                     channels, sampling_rate)
+        bret = self.audio_send_frame(fid, pcm, sample_count, channels, sampling_rate)
 
     def on_video_receive_frame(self, fid, width, height, frame):
         # print('video frame: %d, %d, %d, ' % (fid, width, height))
-        sys.stdout.write('*')
+        sys.stdout.write("*")
         sys.stdout.flush()
         bret = self.video_send_frame(fid, width, height, frame)
         if bret is False:
-            print('video send frame error.')
+            print("video send frame error.")
 
     def witerate(self):
         self.iterate()
 
 
-class ToxOptions():
+class ToxOptions:
     def __init__(self):
         self.ipv6_enabled = True
         self.udp_enabled = True
         self.proxy_type = 0  # 1=http, 2=socks
-        self.proxy_host = ''
+        self.proxy_host = ""
         self.proxy_port = 0
         self.start_port = 0
         self.end_port = 0
         self.tcp_port = 0
         self.savedata_type = 0  # 1=toxsave, 2=secretkey
-        self.savedata_data = b''
+        self.savedata_data = b""
         self.savedata_length = 0
 
 
 def save_to_file(tox, fname):
     data = tox.get_savedata()
-    with open(fname, 'wb') as f:
+    with open(fname, "wb") as f:
         f.write(data)
 
 
 def load_from_file(fname):
-    return open(fname, 'rb').read()
+    return open(fname, "rb").read()
 
 
 class EchoBot(Tox):
@@ -119,7 +123,7 @@ class EchoBot(Tox):
             super(EchoBot, self).__init__(opts)
 
         self.self_set_name("EchoBot")
-        print('ID: %s' % self.self_get_address())
+        print("ID: %s" % self.self_get_address())
 
         self.files = {}
 
@@ -127,7 +131,7 @@ class EchoBot(Tox):
         self.av = AV(self)
 
     def connect(self):
-        print('connecting...')
+        print("connecting...")
         self.bootstrap(SERVER[0], SERVER[1], SERVER[2])
 
     def loop(self):
@@ -139,11 +143,11 @@ class EchoBot(Tox):
                 status = self.self_get_connection_status()
 
                 if not checked and status:
-                    print('Connected to DHT.')
+                    print("Connected to DHT.")
                     checked = True
 
                 if checked and not status:
-                    print('Disconnected from DHT.')
+                    print("Disconnected from DHT.")
                     self.connect()
                     checked = False
 
@@ -154,15 +158,15 @@ class EchoBot(Tox):
             save_to_file(self, DATA)
 
     def on_friend_request(self, pk, message):
-        print('Friend request from %s: %s' % (pk, message))
+        print("Friend request from %s: %s" % (pk, message))
         self.friend_add_norequest(pk)
-        print('Accepted.')
+        print("Accepted.")
         save_to_file(self, DATA)
 
     def on_friend_message(self, friendId, type, message):
         name = self.friend_get_name(friendId)
-        print('%s: %s' % (name, message))
-        print('EchoBot: %s' % message)
+        print("%s: %s" % (name, message))
+        print("EchoBot: %s" % message)
         self.friend_send_message(friendId, Tox.MESSAGE_TYPE_NORMAL, message)
 
     def on_file_recv(self, fid, filenumber, kind, size, filename):
@@ -171,17 +175,17 @@ class EchoBot(Tox):
             return
 
         self.files[(fid, filenumber)] = {
-            'f': bytes(),
-            'filename': filename,
-            'size': size
+            "f": bytes(),
+            "filename": filename,
+            "size": size,
         }
 
         self.file_control(fid, filenumber, Tox.FILE_CONTROL_RESUME)
 
     def on_file_recv_chunk(self, fid, filenumber, position, data):
-        filename = self.files[(fid, filenumber)]['filename']
-        size = self.files[(fid, filenumber)]['size']
-        print(fid, filenumber, filename, position/float(size)*100)
+        filename = self.files[(fid, filenumber)]["filename"]
+        size = self.files[(fid, filenumber)]["size"]
+        print(fid, filenumber, filename, position / float(size) * 100)
 
         if data is None:
             msg = "I got '{}', sending it back right away!".format(filename)
@@ -189,19 +193,19 @@ class EchoBot(Tox):
 
             self.files[(fid, 0)] = self.files[(fid, filenumber)]
 
-            length = self.files[(fid, filenumber)]['size']
+            length = self.files[(fid, filenumber)]["size"]
             self.file_send(fid, 0, length, filename, filename)
 
             del self.files[(fid, filenumber)]
             return
 
-        self.files[(fid, filenumber)]['f'] += data
+        self.files[(fid, filenumber)]["f"] += data
 
     def on_file_chunk_request(self, fid, filenumber, position, length):
         if length == 0:
             return
 
-        data = self.files[(fid, filenumber)]['f'][position:(position + length)]
+        data = self.files[(fid, filenumber)]["f"][position : (position + length)]
         self.file_send_chunk(fid, filenumber, position, data)
 
 
