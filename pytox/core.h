@@ -29,11 +29,11 @@
 
 /* ToxAV definition */
 typedef struct {
-  PyObject_HEAD
-  Tox* tox;
+  PyObject_HEAD Tox *tox;
 } ToxCore;
 
-/* This needs to be extern as it's dynamically loaded by the Python interpreter. */
+/* This needs to be extern as it's dynamically loaded by the Python interpreter.
+ */
 extern PyTypeObject ToxCoreType;
 
 void ToxCore_install_dict(void);

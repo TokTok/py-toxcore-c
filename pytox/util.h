@@ -26,33 +26,36 @@
 
 #include <Python.h>
 
-extern PyObject* ToxOpError;
+extern PyObject *ToxOpError;
 
-#define CHECK_TOX(SELF)                                             \
-  do { if ((SELF)->tox == NULL) {                                   \
-    PyErr_SetString(ToxOpError, "toxcore object not initialised."); \
-    return NULL;                                                    \
-  } } while (0)
+#define CHECK_TOX(SELF)                                                        \
+  do {                                                                         \
+    if ((SELF)->tox == NULL) {                                                 \
+      PyErr_SetString(ToxOpError, "toxcore object not initialised.");          \
+      return NULL;                                                             \
+    }                                                                          \
+  } while (0)
 
 #if PY_MAJOR_VERSION < 3
-  #define PYSTRING_FromString PyString_FromString
-  #define PYSTRING_FromStringAndSize PyString_FromStringAndSize
-  #define PYSTRING_Check PyString_Check
+#define PYSTRING_FromString PyString_FromString
+#define PYSTRING_FromStringAndSize PyString_FromStringAndSize
+#define PYSTRING_Check PyString_Check
 
-  #define PYBYTES_FromStringAndSize PyString_FromStringAndSize
+#define PYBYTES_FromStringAndSize PyString_FromStringAndSize
 #else
-  #define PYSTRING_FromString PyUnicode_FromString
-  #define PYSTRING_FromStringAndSize PyUnicode_FromStringAndSize
-  #define PYSTRING_Check PyUnicode_Check
+#define PYSTRING_FromString PyUnicode_FromString
+#define PYSTRING_FromStringAndSize PyUnicode_FromStringAndSize
+#define PYSTRING_Check PyUnicode_Check
 
-  #define PYBYTES_FromStringAndSize PyBytes_FromStringAndSize
+#define PYBYTES_FromStringAndSize PyBytes_FromStringAndSize
 #endif
 
-void bytes_to_hex_string(const uint8_t* digest, int length, uint8_t* hex_digest);
+void bytes_to_hex_string(const uint8_t *digest, int length,
+                         uint8_t *hex_digest);
 
-void hex_string_to_bytes(uint8_t* hexstr, int length, uint8_t* bytes);
+void hex_string_to_bytes(uint8_t *hexstr, int length, uint8_t *bytes);
 
-void PyStringUnicode_AsStringAndSize(PyObject* object, const char** str,
-    Py_ssize_t* len);
+void PyStringUnicode_AsStringAndSize(PyObject *object, const char **str,
+                                     Py_ssize_t *len);
 
 #endif /* PYTOX_UTIL_H */

@@ -8,4 +8,3 @@ The pytox module contains two classes:
 
     pytox.Tox
     pytox.ToxAV
-

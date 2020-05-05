@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # simple script to test the completeness of the python bindings:
-
+import re
 from sys import version_info
 
 if version_info[0] < 3:
@@ -8,13 +8,8 @@ if version_info[0] < 3:
 else:
     from urllib.request import urlopen
 
-import re
-
-
-TOXURL =\
-    "https://raw.githubusercontent.com/TokTok/c-toxcore/master/toxcore/tox.h"
-PYTOXURL =\
-    "https://raw.githubusercontent.com/TokTok/py-toxcore-c/master/pytox/core.c"
+TOXURL = "https://raw.githubusercontent.com/TokTok/c-toxcore/master/toxcore/tox.h"
+PYTOXURL = "https://raw.githubusercontent.com/TokTok/py-toxcore-c/master/pytox/core.c"
 
 toxsrc = urlopen(TOXURL).read()
 pytoxsrc = urlopen(PYTOXURL).read()
@@ -23,7 +18,7 @@ res = None
 if version_info[0] < 3:
     res = re.findall(r"\n[_a-z0-9]+ (tox_[\_a-z]+\()", str(toxsrc))
 else:
-    res = re.findall(r'[_a-z0-9]+ (tox_[\_a-z]+\()', str(toxsrc))
+    res = re.findall(r"[_a-z0-9]+ (tox_[\_a-z]+\()", str(toxsrc))
 
 incl = 0
 excl = []
@@ -34,10 +29,8 @@ for function in res:
     else:
         excl.append(function)
 
-
-print(
-    "PyTox includes %d out of %d functions found in tox.h" % (incl, len(res))
-)
+print("PyTox includes %d out of %d functions found in tox.h" %
+      (incl, len(res)))
 
 print("Not included are the functions:")
 for item in excl:

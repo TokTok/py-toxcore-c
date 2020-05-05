@@ -1,8 +1,8 @@
 import os
 import shlex
 import subprocess  # nosec
-
-from distutils.core import setup, Extension
+from distutils.core import Extension
+from distutils.core import setup
 
 TOXAV_TEST_CODE = b"""
 extern int toxav_new();
@@ -10,11 +10,15 @@ int (*x)() = &toxav_new;
 int main(){}
 """
 
+
 def supports_av(libs):
     ldflags = shlex.split(os.environ.get("LDFLAGS", ""))
     proc = subprocess.Popen(  # nosec
         ["cc", "-xc", "-"] + ldflags + libs,
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     # Wait for process to terminate; ignore stdout/stderr.
     proc.communicate(TOXAV_TEST_CODE)
 
@@ -23,21 +27,22 @@ def supports_av(libs):
         return True
     return False
 
+
 sources = ["pytox/pytox.c", "pytox/core.c", "pytox/util.c"]
 libraries = [
-  "opus",
-  "sodium",
-  "toxcore",
-  "vpx",
+    "opus",
+    "sodium",
+    "toxcore",
+    "vpx",
 ]
 cflags = [
-  "-Wall",
-  # "-Werror",
-  "-Wextra",
-  "-Wno-declaration-after-statement",
-  "-Wno-missing-field-initializers",
-  "-Wno-unused-parameter",
-  "-fno-strict-aliasing",
+    "-Wall",
+    # "-Werror",
+    "-Wextra",
+    "-Wno-declaration-after-statement",
+    "-Wno-missing-field-initializers",
+    "-Wno-unused-parameter",
+    "-fno-strict-aliasing",
 ]
 
 if supports_av(["-ltoxcore"]):
@@ -59,11 +64,9 @@ setup(
     url="http://github.com/TokTok/py-toxcore-c",
     license="GPL",
     ext_modules=[
-        Extension(
-            "pytox",
-            sources,
-            extra_compile_args=cflags,
-            libraries=libraries
-        )
-    ]
+        Extension("pytox",
+                  sources,
+                  extra_compile_args=cflags,
+                  libraries=libraries)
+    ],
 )

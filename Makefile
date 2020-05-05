@@ -15,4 +15,3 @@ test: kill build
 
 echobot: kill build
 	docker run -t --name pytox pytox_image python PyTox/examples/echo.py
-

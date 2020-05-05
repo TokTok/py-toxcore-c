@@ -11,9 +11,8 @@ Docker hub: <https://hub.docker.com/r/toxchat/py-toxcore-c/>
 docker pull toxchat/py-toxcore-c
 ```
 
-PyTox provides a Pythonic binding, i.e Object-oriented instead of C
-style, raise exception instead of returning error code. A simple example
-is as follows:
+PyTox provides a Pythonic binding, i.e Object-oriented instead of C style, raise
+exception instead of returning error code. A simple example is as follows:
 
 ```python
 from pytox import Tox
@@ -57,36 +56,32 @@ class EchoBot(Tox):
 EchoBot(ToxOptions()).loop()
 ```
 
-As you can see callbacks are mapped into class method instead of using
-it the the c ways. For more details please refer to
+As you can see callbacks are mapped into class method instead of using it the
+the c ways. For more details please refer to
 [examples/echo.py](https://github.com/TokTok/py-toxcore-c/blob/master/examples/echo.py).
 
 ## Getting started
 
-To get started, a Makefile is provided to run PyTox inside a docker
-container:
+To get started, a Makefile is provided to run PyTox inside a docker container:
 
-  - `make test`: This will launch tests in a container.
-  - `make run`: This will launch an interactive container with PyTox
-    installed.
-  - `make echobot`: This will launch the example echobot in a
-    container.
+- `make test`: This will launch tests in a container.
+- `make run`: This will launch an interactive container with PyTox installed.
+- `make echobot`: This will launch the example echobot in a container.
 
 ## Examples
 
-  - [echo.py](https://github.com/TokTok/py-toxcore-c/blob/master/examples/echo.py):
-    A working echo bot that wait for friend requests, and than start
-    echoing anything that friend send.
+- [echo.py](https://github.com/TokTok/py-toxcore-c/blob/master/examples/echo.py):
+  A working echo bot that wait for friend requests, and than start echoing
+  anything that friend send.
 
 ## Documentation
 
-Full API documentation can be read
-[here](http://aitjcize.github.io/PyTox/).
+Full API documentation can be read [here](http://aitjcize.github.io/PyTox/).
 
 ## Todo
 
-  - Complete API binding (use tools/apicomplete.py to check)
-  - Unittest for ToxAV
+- Complete API binding (use tools/apicomplete.py to check)
+- Unittest for ToxAV
 
 ## Contributing
 
