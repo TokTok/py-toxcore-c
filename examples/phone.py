@@ -25,16 +25,14 @@
 from __future__ import print_function
 
 import sys
+from os.path import exists
+from select import select
+from threading import Thread
+from time import sleep
 
 import cv2
 import numpy as np
 import pyaudio
-
-from time import sleep
-from os.path import exists
-from threading import Thread
-from select import select
-
 from pytox import Tox, ToxAV
 
 SERVER = [

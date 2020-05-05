@@ -25,10 +25,10 @@
 from __future__ import print_function
 
 import sys
-from pytox import Tox, ToxAV
-
-from time import sleep
 from os.path import exists
+from time import sleep
+
+from pytox import Tox, ToxAV
 
 SERVER = [
     "tox.initramfs.io",
