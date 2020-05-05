@@ -27,9 +27,9 @@ import os
 import re
 import sys
 import unittest
-
-from pytox import Tox, OperationFailedError
 from time import sleep
+
+from pytox import OperationFailedError, Tox
 
 ADDR_SIZE = 76
 CLIENT_ID_SIZE = 64
