@@ -1,11 +1,10 @@
 ---
-_extends: template
+_extends: .github
 
 repository:
   name: py-toxcore-c
   description: Python binding for Project-Tox the skype replacement.
   topics: toxcore, python, ffi
-  has_issues: true
 
 branches:
   - name: "master"
@@ -16,7 +15,5 @@ branches:
           - CodeFactor
           - Docker Build
           - Travis CI - Pull Request
-          - WIP
           - code-review/reviewable
           - coverage/coveralls
-          - license/cla
