@@ -83,7 +83,8 @@ class AV(ToxAV):
             pass
 
     def on_call(self, friend_number, audio_enabled, video_enabled):
-        print("Incoming call: %d, %d, %d" % (friend_number, audio_enabled, video_enabled))
+        print("Incoming call: %d, %d, %d" %
+              (friend_number, audio_enabled, video_enabled))
         self.answer(friend_number, 16, 64)
         print("Answered, in call...")
 
@@ -318,6 +319,7 @@ class Phone(Tox):
     def call(self, friend_number):
         print('Calling %s ...' % self.friend_get_name(friend_number))
         self.call_idx = self.av.call(friend_number, self.av.TypeVideo, 60)
+
 
 opts = None
 opts = ToxOptions()
