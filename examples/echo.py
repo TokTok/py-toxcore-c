@@ -52,14 +52,11 @@ class AV(ToxAV):
         self.core = self.get_tox()
 
     def on_call(self, fid, audio_enabled, video_enabled):
-        print(
-            "Incoming %s call from %d:%s ..."
-            % (
-                "video" if video_enabled else "audio",
-                fid,
-                self.core.friend_get_name(fid),
-            )
-        )
+        print("Incoming %s call from %d:%s ..." % (
+            "video" if video_enabled else "audio",
+            fid,
+            self.core.friend_get_name(fid),
+        ))
         bret = self.answer(fid, 48, 64)
         print("Answered, in call..." + str(bret))
 
@@ -67,18 +64,18 @@ class AV(ToxAV):
         print("call state:fn=%d, state=%d" % (fid, state))
 
     def on_bit_rate_status(self, fid, audio_bit_rate, video_bit_rate):
-        print(
-            "bit rate status: fn=%d, abr=%d, vbr=%d"
-            % (fid, audio_bit_rate, video_bit_rate)
-        )
+        print("bit rate status: fn=%d, abr=%d, vbr=%d" %
+              (fid, audio_bit_rate, video_bit_rate))
 
-    def on_audio_receive_frame(self, fid, pcm, sample_count, channels, sampling_rate):
+    def on_audio_receive_frame(self, fid, pcm, sample_count, channels,
+                               sampling_rate):
         # print('audio frame: %d, %d, %d, %d' %
         #      (fid, sample_count, channels, sampling_rate))
         # print('pcm len:%d, %s' % (len(pcm), str(type(pcm))))
         sys.stdout.write(".")
         sys.stdout.flush()
-        bret = self.audio_send_frame(fid, pcm, sample_count, channels, sampling_rate)
+        bret = self.audio_send_frame(fid, pcm, sample_count, channels,
+                                     sampling_rate)
 
     def on_video_receive_frame(self, fid, width, height, frame):
         # print('video frame: %d, %d, %d, ' % (fid, width, height))
@@ -205,7 +202,7 @@ class EchoBot(Tox):
         if length == 0:
             return
 
-        data = self.files[(fid, filenumber)]["f"][position : (position + length)]
+        data = self.files[(fid, filenumber)]["f"][position:(position + length)]
         self.file_send_chunk(fid, filenumber, position, data)
 
 

@@ -42,7 +42,6 @@ SERVER = [
     "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67",
 ]
 
-
 DATA = "phone.data"
 cap = cv2.VideoCapture(0)
 audio = pyaudio.PyAudio()
@@ -63,9 +62,8 @@ class AV(ToxAV):
     def update_settings(self, idx):
         self.cs = self.get_peer_csettings(idx, 0)
         self.call_type = self.cs["call_type"]
-        self.frame_size = (
-            self.cs["audio_sample_rate"] * self.cs["audio_frame_duration"] / 1000
-        )
+        self.frame_size = (self.cs["audio_sample_rate"] *
+                           self.cs["audio_frame_duration"] / 1000)
 
         ret, frame = cap.read()
         width, height = 640, 480
@@ -77,16 +75,16 @@ class AV(ToxAV):
             print("Can't determine webcam resolution")
 
         try:
-            self.change_settings(
-                idx, {"max_video_width": width, "max_video_height": height}
-            )
+            self.change_settings(idx, {
+                "max_video_width": width,
+                "max_video_height": height
+            })
         except:
             pass
 
     def on_call(self, friend_number, audio_enabled, video_enabled):
-        print(
-            "Incoming call: %d, %d, %d" % (friend_number, audio_enabled, video_enabled)
-        )
+        print("Incoming call: %d, %d, %d" %
+              (friend_number, audio_enabled, video_enabled))
         self.answer(friend_number, 16, 64)
         print("Answered, in call...")
 
@@ -97,10 +95,8 @@ class AV(ToxAV):
         self.update_settings(idx)
 
         call_type = "video" if self.call_type == self.TypeVideo else "audio"
-        print(
-            "Incoming %s call from %d:%s ..."
-            % (call_type, idx, self.core.friend_get_name(idx))
-        )
+        print("Incoming %s call from %d:%s ..." %
+              (call_type, idx, self.core.friend_get_name(idx)))
 
         self.answer(idx, self.call_type)
         print("Answered, in call...")
@@ -126,12 +122,12 @@ class AV(ToxAV):
             output=True,
         )
 
-        self.ae_thread = Thread(target=self.audio_encode, args=(idx,))
+        self.ae_thread = Thread(target=self.audio_encode, args=(idx, ))
         self.ae_thread.daemon = True
         self.ae_thread.start()
 
         if self.call_type == self.TypeVideo:
-            self.ve_thread = Thread(target=self.video_encode, args=(idx,))
+            self.ve_thread = Thread(target=self.video_encode, args=(idx, ))
             self.ve_thread.daemon = True
             self.ve_thread.start()
 
@@ -169,9 +165,8 @@ class AV(ToxAV):
 
         while not self.stop:
             try:
-                self.send_audio(
-                    idx, self.frame_size, self.aistream.read(self.frame_size)
-                )
+                self.send_audio(idx, self.frame_size,
+                                self.aistream.read(self.frame_size))
             except Exception as e:
                 print(e)
 
@@ -203,9 +198,9 @@ class AV(ToxAV):
             sys.stdout.write("*")
             sys.stdout.flush()
 
-        frame = np.ndarray(
-            shape=(height, width, 3), dtype=np.dtype(np.uint8), buffer=data
-        )
+        frame = np.ndarray(shape=(height, width, 3),
+                           dtype=np.dtype(np.uint8),
+                           buffer=data)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         cv2.imshow("frame", frame)
         cv2.waitKey(1)
@@ -281,9 +276,9 @@ class Phone(Tox):
                         try:
                             friend_number = int(args[1])
                             msg = " ".join(args[2:])
-                            self.friend_send_message(
-                                friend_number, Tox.MESSAGE_TYPE_NORMAL, msg
-                            )
+                            self.friend_send_message(friend_number,
+                                                     Tox.MESSAGE_TYPE_NORMAL,
+                                                     msg)
                         except:
                             pass
                     elif args[0] == "call":
@@ -323,10 +318,8 @@ class Phone(Tox):
         print("%s: %s" % (name, message))
 
     def on_connection_status(self, friendId, status):
-        print(
-            "%s %s"
-            % (self.friend_get_name(friendId), "online" if status else "offline")
-        )
+        print("%s %s" % (self.friend_get_name(friendId),
+                         "online" if status else "offline"))
 
     def call(self, friend_number):
         print("Calling %s ..." % self.friend_get_name(friend_number))
