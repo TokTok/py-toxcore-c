@@ -21,7 +21,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-
 import hashlib
 import os
 import re
@@ -29,7 +28,8 @@ import sys
 import unittest
 from time import sleep
 
-from pytox import OperationFailedError, Tox
+from pytox import OperationFailedError
+from pytox import Tox
 
 ADDR_SIZE = 76
 CLIENT_ID_SIZE = 64
