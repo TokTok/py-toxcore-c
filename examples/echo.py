@@ -166,7 +166,7 @@ class EchoBot(Tox):
         self.friend_send_message(friendId, Tox.MESSAGE_TYPE_NORMAL, message)
 
     def on_file_recv(self, fid, filenumber, kind, size, filename):
-        print (fid, filenumber, kind, size, filename)
+        print(fid, filenumber, kind, size, filename)
         if size == 0:
             return
 
@@ -181,7 +181,7 @@ class EchoBot(Tox):
     def on_file_recv_chunk(self, fid, filenumber, position, data):
         filename = self.files[(fid, filenumber)]['filename']
         size = self.files[(fid, filenumber)]['size']
-        print (fid, filenumber, filename, position/float(size)*100)
+        print(fid, filenumber, filename, position/float(size)*100)
 
         if data is None:
             msg = "I got '{}', sending it back right away!".format(filename)

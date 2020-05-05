@@ -48,6 +48,7 @@ def patch_unittest():
     if major == 2 and minor <= 6:
         unittest.skip = unittest_skip
 
+
 # Patch unittest for Python version <= 2.6
 patch_unittest()
 
@@ -98,7 +99,7 @@ class ToxTest(unittest.TestCase):
         self.bob = BobTox(opt)
 
         self.bob.bootstrap("localhost", self.alice.self_get_udp_port(),
-                self.alice.self_get_dht_id())
+                           self.alice.self_get_dht_id())
 
         self.loop_until_connected()
 
@@ -446,7 +447,8 @@ class ToxTest(unittest.TestCase):
 
         AliceTox.on_friend_message = on_friend_message
 
-        self.ensure_exec(self.bob.friend_send_message, (self.aid, Tox.MESSAGE_TYPE_NORMAL, MSG))
+        self.ensure_exec(self.bob.friend_send_message,
+                         (self.aid, Tox.MESSAGE_TYPE_NORMAL, MSG))
         self.alice.fm = False
         assert self.wait_callback(self.alice, 'fm')
 
@@ -464,7 +466,8 @@ class ToxTest(unittest.TestCase):
 
         AliceTox.on_friend_message = on_friend_action
 
-        self.ensure_exec(self.bob.friend_send_message, (self.aid, Tox.MESSAGE_TYPE_ACTION, ACTION))
+        self.ensure_exec(self.bob.friend_send_message,
+                         (self.aid, Tox.MESSAGE_TYPE_ACTION, ACTION))
         self.alice.fa = False
         assert self.wait_callback(self.alice, 'fa')
 
@@ -620,7 +623,8 @@ class ToxTest(unittest.TestCase):
         AliceTox.on_conference_message = on_conference_message
         self.alice.gm = False
 
-        self.ensure_exec(self.bob.conference_send_message, (group_id, Tox.MESSAGE_TYPE_NORMAL, MSG))
+        self.ensure_exec(self.bob.conference_send_message,
+                         (group_id, Tox.MESSAGE_TYPE_NORMAL, MSG))
 
         assert self.wait_callback(self.alice, 'gm')
         AliceTox.on_conference_message = Tox.on_conference_message
@@ -640,14 +644,17 @@ class ToxTest(unittest.TestCase):
         AliceTox.on_conference_message = on_conference_action
         self.alice.ga = False
 
-        self.ensure_exec(self.bob.conference_send_message, (group_id, Tox.MESSAGE_TYPE_ACTION, MSG))
+        self.ensure_exec(self.bob.conference_send_message,
+                         (group_id, Tox.MESSAGE_TYPE_ACTION, MSG))
 
         assert self.wait_callback(self.alice, 'ga')
         AliceTox.on_conference_message = Tox.on_conference_message
 
         #: Test chatlist
-        assert len(self.bob.conference_get_chatlist()) == self.bob.conference_get_chatlist_size()
-        assert len(self.alice.conference_get_chatlist()) == self.bob.conference_get_chatlist_size()
+        assert len(self.bob.conference_get_chatlist()
+                   ) == self.bob.conference_get_chatlist_size()
+        assert len(self.alice.conference_get_chatlist()
+                   ) == self.bob.conference_get_chatlist_size()
 
         assert self.bob.conference_get_chatlist_size() == 1
         self.bob.conference_delete(group_id)
@@ -753,6 +760,7 @@ class ToxTest(unittest.TestCase):
         AliceTox.on_file_recv_chunk = Tox.on_file_recv_chunk
         BobTox.on_file_recv_control = Tox.on_file_recv_control
         BobTox.on_file_chunk_request = Tox.on_file_chunk_request
+
 
 if __name__ == '__main__':
     methods = {x for x in dir(Tox) if not x[0].isupper() and x[0] != '_'}
