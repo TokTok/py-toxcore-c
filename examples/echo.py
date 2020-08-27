@@ -30,11 +30,7 @@ from time import sleep
 from pytox import Tox
 from pytox import ToxAV
 
-SERVER = [
-    "tox.initramfs.io",
-    33445,
-    "3F0A45A268367C1BEA652F258C85F4A66DA76BCAA667A49E770BCC4917AB6A25",
-]
+SERVER = [    "tox.initramfs.io",    33445,    "3F0A45A268367C1BEA652F258C85F4A66DA76BCAA667A49E770BCC4917AB6A25",]
 
 DATA = "echo.data"
 
@@ -66,6 +62,12 @@ class AV(ToxAV):
     def on_bit_rate_status(self, fid, audio_bit_rate, video_bit_rate):
         print("bit rate status: fn=%d, abr=%d, vbr=%d" %
               (fid, audio_bit_rate, video_bit_rate))
+
+    def on_audio_bit_rate(self, fid, audio_bit_rate):
+        print("audio bit rate change event: fid=%d, audio_bit_rate=%d" % (fid, audio_bit_rate))
+
+    def on_video_bit_rate(self, fid, video_bit_rate):
+        print("video bit rate change event: fid=%d, video_bit_rate=%d" % (fid, video_bit_rate))
 
     def on_audio_receive_frame(self, fid, pcm, sample_count, channels,
                                sampling_rate):
@@ -102,7 +104,7 @@ class ToxOptions:
         self.savedata_type = 0  # 1=toxsave, 2=secretkey
         self.savedata_data = b""
         self.savedata_length = 0
-
+        self.local_discovery_enabled = True
 
 def save_to_file(tox, fname):
     data = tox.get_savedata()
@@ -191,7 +193,7 @@ class EchoBot(Tox):
             self.files[(fid, 0)] = self.files[(fid, filenumber)]
 
             length = self.files[(fid, filenumber)]["size"]
-            self.file_send(fid, 0, length, filename, filename)
+            self.file_send(fid, 0, length, str(filenumber), filename)
 
             del self.files[(fid, filenumber)]
             return
