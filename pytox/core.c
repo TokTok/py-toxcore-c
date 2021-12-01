@@ -53,7 +53,7 @@ static void callback_friend_request(Tox *tox, const uint8_t *public_key,
   bytes_to_hex_string(public_key, TOX_PUBLIC_KEY_SIZE, buf);
 
   PyObject_CallMethod((PyObject *)self, "on_friend_request", "ss#", buf, data,
-                      length - (data[length - 1] == 0));
+                      length - (length > 0 && data[length - 1] == 0));
 }
 
 static void callback_friend_message(Tox *tox, uint32_t friendnumber,
@@ -62,14 +62,15 @@ static void callback_friend_message(Tox *tox, uint32_t friendnumber,
                                     void *self) {
   PyObject_CallMethod((PyObject *)self, "on_friend_message", "iis#",
                       friendnumber, type, message,
-                      length - (message[length - 1] == 0));
+                      length - (length > 0 && message[length - 1] == 0));
 }
 
 static void callback_friend_name(Tox *tox, uint32_t friendnumber,
                                  const uint8_t *newname, size_t length,
                                  void *self) {
   PyObject_CallMethod((PyObject *)self, "on_friend_name", "is#", friendnumber,
-                      newname, length - (newname[length - 1] == 0));
+                      newname,
+                      length - (length > 0 && newname[length - 1] == 0));
 }
 
 static void callback_friend_status_message(Tox *tox, uint32_t friendnumber,
@@ -77,7 +78,7 @@ static void callback_friend_status_message(Tox *tox, uint32_t friendnumber,
                                            size_t length, void *self) {
   PyObject_CallMethod((PyObject *)self, "on_friend_status_message", "is#",
                       friendnumber, newstatus,
-                      length - (newstatus[length - 1] == 0));
+                      length - (length > 0 && newstatus[length - 1] == 0));
 }
 
 static void callback_friend_status(Tox *tox, uint32_t friendnumber,
@@ -120,7 +121,7 @@ static void callback_conference_message(Tox *tox, uint32_t conference_number,
                                         void *self) {
   PyObject_CallMethod((PyObject *)self, "on_conference_message", "iiis#",
                       conference_number, peer_number, type, message,
-                      length - (message[length - 1] == 0));
+                      length - (length > 0 && message[length - 1] == 0));
 }
 
 static void callback_conference_peer_name(Tox *tox, uint32_t conference_number,
