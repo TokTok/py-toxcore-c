@@ -11,9 +11,7 @@ branches:
     protection:
       required_status_checks:
         contexts:
-          - Codacy/PR Quality Review
-          - CodeFactor
-          - Docker Build
-          - Travis CI - Pull Request
-          - code-review/reviewable
-          - coverage/coveralls
+          - "cirrus-ci"
+          - "Codacy Static Code Analysis"
+          - "code-review/reviewable"
+          - "Docker Build"
