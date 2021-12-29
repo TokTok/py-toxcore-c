@@ -27,7 +27,8 @@ import sys
 from os.path import exists
 from time import sleep
 
-from pytox import Tox, ToxAV
+from pytox import Tox
+from pytox import ToxAV
 
 SERVER = [
     "tox.initramfs.io",
