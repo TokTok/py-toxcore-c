@@ -21,6 +21,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define PY_SSIZE_T_CLEAN
 #include "core.h"
 #include "util.h"
 
@@ -53,7 +54,7 @@ static void callback_friend_request(Tox *tox, const uint8_t *public_key,
   bytes_to_hex_string(public_key, TOX_PUBLIC_KEY_SIZE, buf);
 
   PyObject_CallMethod((PyObject *)self, "on_friend_request", "ss#", buf, data,
-                      length - (length > 0 && data[length - 1] == 0));
+                      (Py_ssize_t)(length - (length > 0 && data[length - 1] == 0)));
 }
 
 static void callback_friend_message(Tox *tox, uint32_t friendnumber,
@@ -62,7 +63,7 @@ static void callback_friend_message(Tox *tox, uint32_t friendnumber,
                                     void *self) {
   PyObject_CallMethod((PyObject *)self, "on_friend_message", "iis#",
                       friendnumber, type, message,
-                      length - (length > 0 && message[length - 1] == 0));
+                      (Py_ssize_t)(length - (length > 0 && message[length - 1] == 0)));
 }
 
 static void callback_friend_name(Tox *tox, uint32_t friendnumber,
@@ -70,7 +71,7 @@ static void callback_friend_name(Tox *tox, uint32_t friendnumber,
                                  void *self) {
   PyObject_CallMethod((PyObject *)self, "on_friend_name", "is#", friendnumber,
                       newname,
-                      length - (length > 0 && newname[length - 1] == 0));
+                      (Py_ssize_t)(length - (length > 0 && newname[length - 1] == 0)));
 }
 
 static void callback_friend_status_message(Tox *tox, uint32_t friendnumber,
@@ -78,7 +79,7 @@ static void callback_friend_status_message(Tox *tox, uint32_t friendnumber,
                                            size_t length, void *self) {
   PyObject_CallMethod((PyObject *)self, "on_friend_status_message", "is#",
                       friendnumber, newstatus,
-                      length - (length > 0 && newstatus[length - 1] == 0));
+                      (Py_ssize_t)(length - (length > 0 && newstatus[length - 1] == 0)));
 }
 
 static void callback_friend_status(Tox *tox, uint32_t friendnumber,
@@ -111,7 +112,7 @@ static void callback_conference_invite(Tox *tox, uint32_t friendnumber,
                                        const uint8_t *data, size_t length,
                                        void *self) {
   PyObject_CallMethod((PyObject *)self, "on_conference_invite", "ii" BUF_TC "#",
-                      friendnumber, type, data, length);
+                      friendnumber, type, data, (Py_ssize_t)length);
 }
 
 static void callback_conference_message(Tox *tox, uint32_t conference_number,
@@ -121,7 +122,7 @@ static void callback_conference_message(Tox *tox, uint32_t conference_number,
                                         void *self) {
   PyObject_CallMethod((PyObject *)self, "on_conference_message", "iiis#",
                       conference_number, peer_number, type, message,
-                      length - (length > 0 && message[length - 1] == 0));
+                      (Py_ssize_t)(length - (length > 0 && message[length - 1] == 0)));
 }
 
 static void callback_conference_peer_name(Tox *tox, uint32_t conference_number,
@@ -130,7 +131,7 @@ static void callback_conference_peer_name(Tox *tox, uint32_t conference_number,
                                           void *self) {
   PyObject_CallMethod((PyObject *)self, "on_conference_peer_name",
                       "ii" BUF_TC "#", conference_number, peer_number, name,
-                      length);
+                      (Py_ssize_t)length);
 }
 
 static void callback_conference_peer_list_changed(Tox *tox,
@@ -163,7 +164,7 @@ static void callback_file_recv(Tox *tox, uint32_t friend_number,
   } else {
     PyObject_CallMethod((PyObject *)self, "on_file_recv", "iiiKs#",
                         friend_number, file_number, kind, file_size, filename,
-                        filename_length);
+                        (Py_ssize_t)filename_length);
   }
 }
 
@@ -179,7 +180,7 @@ static void callback_file_recv_chunk(Tox *tox, uint32_t friend_number,
                                      const uint8_t *data, size_t length,
                                      void *self) {
   PyObject_CallMethod((PyObject *)self, "on_file_recv_chunk", "iiK" BUF_TC "#",
-                      friend_number, file_number, position, data, length);
+                      friend_number, file_number, position, data, (Py_ssize_t)length);
 }
 
 static void init_options(ToxCore *self, PyObject *pyopts,
@@ -351,9 +352,9 @@ static PyObject *ToxCore_friend_add(ToxCore *self, PyObject *args) {
   CHECK_TOX(self);
 
   uint8_t *address = NULL;
-  int addr_length = 0;
+  Py_ssize_t addr_length = 0;
   uint8_t *data = NULL;
-  int data_length = 0;
+  Py_ssize_t data_length = 0;
 
   if (!PyArg_ParseTuple(args, "s#s#", &address, &addr_length, &data,
                         &data_length)) {
@@ -413,7 +414,7 @@ static PyObject *ToxCore_friend_add_norequest(ToxCore *self, PyObject *args) {
   CHECK_TOX(self);
 
   uint8_t *address = NULL;
-  int addr_length = 0;
+  Py_ssize_t addr_length = 0;
 
   if (!PyArg_ParseTuple(args, "s#", &address, &addr_length)) {
     return NULL;
@@ -436,7 +437,7 @@ static PyObject *ToxCore_friend_by_public_key(ToxCore *self, PyObject *args) {
   CHECK_TOX(self);
 
   uint8_t *id = NULL;
-  int addr_length = 0;
+  Py_ssize_t addr_length = 0;
 
   if (!PyArg_ParseTuple(args, "s#", &id, &addr_length)) {
     return NULL;
@@ -530,7 +531,7 @@ static PyObject *ToxCore_friend_send_message(ToxCore *self, PyObject *args) {
 
   int friend_num = 0;
   int msg_type = 0;
-  int length = 0;
+  Py_ssize_t length = 0;
   uint8_t *message = NULL;
 
   if (!PyArg_ParseTuple(args, "iis#", &friend_num, &msg_type, &message,
@@ -554,7 +555,7 @@ static PyObject *ToxCore_self_set_name(ToxCore *self, PyObject *args) {
   CHECK_TOX(self);
 
   uint8_t *name = 0;
-  int length = 0;
+  Py_ssize_t length = 0;
 
   if (!PyArg_ParseTuple(args, "s#", &name, &length)) {
     return NULL;
@@ -633,7 +634,7 @@ static PyObject *ToxCore_self_set_status_message(ToxCore *self,
   CHECK_TOX(self);
 
   uint8_t *message;
-  int length;
+  Py_ssize_t length;
   if (!PyArg_ParseTuple(args, "s#", &message, &length)) {
     return NULL;
   }
@@ -912,7 +913,7 @@ static PyObject *ToxCore_conference_set_title(ToxCore *self, PyObject *args) {
 
   int conference_number = 0;
   uint8_t *title = NULL;
-  uint32_t length = 0;
+  Py_ssize_t length = 0;
 
   if (!PyArg_ParseTuple(args, "is#", &conference_number, &title, &length)) {
     return NULL;
@@ -991,7 +992,7 @@ static PyObject *ToxCore_conference_join(ToxCore *self, PyObject *args) {
 
   int friend_number = 0;
   uint8_t *cookie = NULL;
-  int length = 0;
+  Py_ssize_t length = 0;
 
   if (!PyArg_ParseTuple(args, "is#", &friend_number, &cookie, &length)) {
     return NULL;
@@ -1014,7 +1015,7 @@ static PyObject *ToxCore_conference_send_message(ToxCore *self,
   int conference_number = 0;
   int type = 0;
   uint8_t *message = NULL;
-  uint32_t length = 0;
+  Py_ssize_t length = 0;
 
   if (!PyArg_ParseTuple(args, "iis#", &conference_number, &type, &message,
                         &length)) {
@@ -1113,7 +1114,7 @@ static PyObject *ToxCore_file_send(ToxCore *self, PyObject *args) {
   uint64_t file_size = 0;
   uint8_t *file_id = NULL;
   uint8_t *filename = 0;
-  int filename_length = 0;
+  Py_ssize_t filename_length = 0;
 
   if (!PyArg_ParseTuple(args, "iiKss#", &friend_number, &kind, &file_size,
                         &file_id, &filename, &filename_length)) {
@@ -1158,7 +1159,7 @@ static PyObject *ToxCore_file_send_chunk(ToxCore *self, PyObject *args) {
   uint32_t file_number = 0;
   uint64_t position = 0;
   uint8_t *data = 0;
-  size_t length = 0;
+  Py_ssize_t length = 0;
 
   if (!PyArg_ParseTuple(args, "iiKs#", &friend_number, &file_number, &position,
                         &data, &length)) {
@@ -1300,8 +1301,8 @@ static PyObject *ToxCore_bootstrap(ToxCore *self, PyObject *args) {
   uint16_t port = 0;
   uint8_t *public_key = NULL;
   char *address = NULL;
-  int addr_length = 0;
-  int pk_length = 0;
+  Py_ssize_t addr_length = 0;
+  Py_ssize_t pk_length = 0;
   uint8_t pk[TOX_PUBLIC_KEY_SIZE];
 
   if (!PyArg_ParseTuple(args, "s#Hs#", &address, &addr_length, &port,
@@ -1326,8 +1327,8 @@ static PyObject *ToxCore_add_tcp_relay(ToxCore *self, PyObject *args) {
   uint16_t port = 0;
   uint8_t *public_key = NULL;
   char *address = NULL;
-  int addr_length = 0;
-  int pk_length = 0;
+  Py_ssize_t addr_length = 0;
+  Py_ssize_t pk_length = 0;
   uint8_t pk[TOX_PUBLIC_KEY_SIZE];
 
   if (!PyArg_ParseTuple(args, "s#Hs#", &address, &addr_length, &port,
