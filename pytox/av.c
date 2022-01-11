@@ -347,13 +347,12 @@ static int ToxAVCore_init(ToxAVCore *self, PyObject *args, PyObject *kwds) {
   return init_helper(self, args);
 }
 
-static int ToxAVCore_dealloc(ToxAVCore *self) {
+static void ToxAVCore_dealloc(ToxAVCore *self) {
   if (self->av) {
     Py_DECREF(self->core);
     toxav_kill(self->av);
     self->av = NULL;
   }
-  return 0;
 }
 
 static PyObject *ToxAVCore_call(ToxAVCore *self, PyObject *args) {
@@ -558,12 +557,12 @@ static PyObject *ToxAVCore_get_tox(ToxAVCore *self, PyObject *args) {
   return self->core;
 }
 
-static PyObject *ToxAVCore_iteration_interval(ToxAVCore *self) {
+static PyObject *ToxAVCore_iteration_interval(ToxAVCore *self, PyObject *args) {
   uint32_t interval = toxav_iteration_interval(self->av);
   return PyLong_FromLong(interval);
 }
 
-static PyObject *ToxAVCore_iterate(ToxAVCore *self) {
+static PyObject *ToxAVCore_iterate(ToxAVCore *self, PyObject *args) {
   toxav_iterate(self->av);
   Py_RETURN_NONE;
 }

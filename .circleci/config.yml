@@ -18,6 +18,7 @@ jobs:
       - run: apt-get update
       - run: DEBIAN_FRONTEND=noninteractive
           apt-get install -y --no-install-recommends
+          ca-certificates
           gcc
           g++
           cmake
@@ -29,9 +30,9 @@ jobs:
           pkg-config
           python3-dev
           python3-setuptools
-      - run: git clone --depth=1 git://github.com/TokTok/c-toxcore
+      - run: git clone --depth=1 https://github.com/TokTok/c-toxcore
       - run: cd c-toxcore;
-          . .travis/flags-gcc.sh;
+          . .github/scripts/flags-gcc.sh;
           add_flag -fsanitize=address;
           cmake -H. -B_build -GNinja
           -DCMAKE_C_FLAGS="$C_FLAGS"

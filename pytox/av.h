@@ -29,7 +29,7 @@
 #include <vpx/vpx_image.h>
 
 /* ToxAV definition */
-typedef struct {
+typedef struct ToxAVCore {
   PyObject_HEAD PyObject *core;
   ToxAV *av;
   uint32_t i_w, i_h;

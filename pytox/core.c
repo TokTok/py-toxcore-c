@@ -323,12 +323,11 @@ static int ToxCore_init(ToxCore *self, PyObject *args, PyObject *kwds) {
   return init_helper(self, args);
 }
 
-static int ToxCore_dealloc(ToxCore *self) {
+static void ToxCore_dealloc(ToxCore *self) {
   if (self->tox) {
     tox_kill(self->tox);
     self->tox = NULL;
   }
-  return 0;
 }
 
 static PyObject *ToxCore_callback_stub(ToxCore *self, PyObject *args) {

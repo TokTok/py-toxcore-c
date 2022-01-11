@@ -28,7 +28,7 @@
 #include <tox/tox.h>
 
 /* ToxAV definition */
-typedef struct {
+typedef struct ToxCore {
   PyObject_HEAD Tox *tox;
 } ToxCore;
 
