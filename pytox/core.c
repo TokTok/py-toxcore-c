@@ -1099,6 +1099,7 @@ static PyObject *ToxCore_conference_get_chatlist(ToxCore *self,
 
   PyObject *plist = PyList_New(0);
   if (!plist) {
+    free(list);
     return NULL;
   }
 
