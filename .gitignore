@@ -6,4 +6,5 @@
 .*.swp
 *.so
 *.o
-.tox
+*.tox
+.mypy_cache
