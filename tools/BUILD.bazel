@@ -1,0 +1,7 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
+py_binary(
+    name = "gen_api",
+    srcs = ["gen_api.py"],
+    visibility = ["//py_toxcore_c:__subpackages__"],
+)
