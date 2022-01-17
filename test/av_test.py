@@ -3,6 +3,7 @@ import unittest
 
 from pytox import av
 
+
 class AvTest(unittest.TestCase):
 
     def test_version(self):

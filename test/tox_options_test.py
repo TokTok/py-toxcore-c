@@ -3,6 +3,7 @@ import unittest
 
 from pytox import core
 
+
 class ToxOptionsTest(unittest.TestCase):
 
     def test_options(self):

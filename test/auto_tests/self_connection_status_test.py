@@ -3,6 +3,7 @@ import unittest
 
 from pytox import core
 
+
 class TestTox(core.Core):
 
     def __init__(self):
@@ -24,7 +25,8 @@ class AutoTest(unittest.TestCase):
                     tox1.iterate()
                     tox2.iterate()
                     time.sleep(tox1.iteration_interval / 1000)
-                self.assertEqual(tox1.connection_status, tox1.connection_status_from_cb)
+                self.assertEqual(tox1.connection_status,
+                                 tox1.connection_status_from_cb)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ import unittest
 
 from pytox import core
 
+
 class CoreTest(unittest.TestCase):
 
     def test_version(self):
@@ -30,8 +31,8 @@ class CoreTest(unittest.TestCase):
         opts = core.ToxOptions()
         with core.Core(opts) as tox:
             self.assertEqual(
-                    tox.public_key.hex()[:72] + format(tox.nospam, "08x"),
-                    tox.address[:36].hex())
+                tox.public_key.hex()[:72] + format(tox.nospam, "08x"),
+                tox.address[:36].hex())
 
     def test_public_key_is_not_secret_key(self):
         opts = core.ToxOptions()
@@ -64,7 +65,8 @@ class CoreTest(unittest.TestCase):
 
             tox.status_message = b"x" * core.MAX_STATUS_MESSAGE_LENGTH
             with self.assertRaises(core.ApiException):
-                tox.status_message = b"x" * (core.MAX_STATUS_MESSAGE_LENGTH + 1)
+                tox.status_message = b"x" * \
+                    (core.MAX_STATUS_MESSAGE_LENGTH + 1)
 
     def test_set_status(self):
         with core.Core() as tox:

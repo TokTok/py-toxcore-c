@@ -8,6 +8,7 @@ from typing import List
 from typing import Sequence
 from typing import Tuple
 
+
 def tokenize(line: str) -> Tuple[str, ...]:
     tokens = []
     token = ""
@@ -40,7 +41,7 @@ def untokenize(tokens: Tuple[str, ...]) -> str:
     line = []
     for i in range(len(tokens) - 1):
         if tokens[i:i+2] == ("void", ")"):
-            break;
+            break
         line.append(tokens[i])
         if needs_space(tokens[i], tokens[i + 1]):
             # print(f"'{tokens[i]}' and '{tokens[i + 1]}' need space")
@@ -191,8 +192,10 @@ def gen_cython(lines: Sequence[str], fun_prefix: str) -> List[str]:
             # TODO(iphydf): Handle this better (by checking whether we have a callback install
             # function for this event).
             if event != "log":
-                handlers.append(f"cdef void handle_{untokenize_fun((event,) + tokens[3:])}")
-                install_handlers.append(f"    {fun_prefix}callback_{event}(ptr, handle_{event})")
+                handlers.append(
+                    f"cdef void handle_{untokenize_fun((event,) + tokens[3:])}")
+                install_handlers.append(
+                    f"    {fun_prefix}callback_{event}(ptr, handle_{event})")
             if ';' not in tokens:
                 state.append("callback")
             else:
@@ -227,7 +230,7 @@ def main() -> None:
             if line.startswith("cdef extern from"):
                 with open(api, "r") as api_fh:
                     print("\n".join(gen_cython(api_fh.readlines(),
-                        fun_prefix=os.path.split(api)[-1].split(".")[0] + "_")))
+                                               fun_prefix=os.path.split(api)[-1].split(".")[0] + "_")))
             else:
                 print(line.rstrip())
 
