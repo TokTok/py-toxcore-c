@@ -5,7 +5,6 @@ from pytox import core
 
 
 class ToxOptionsTest(unittest.TestCase):
-
     def test_options(self):
         opts = core.ToxOptions()
         self.assertTrue(opts.ipv6_enabled)
@@ -19,5 +18,5 @@ class ToxOptionsTest(unittest.TestCase):
             print(saved_opts.ipv6_enabled)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
