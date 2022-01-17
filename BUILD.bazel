@@ -1,28 +1,28 @@
-load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("//third_party/python:build_defs.bzl", "pyx_library")
 load("//tools/project:build_defs.bzl", "project")
+
+package(features = ["layering_check"])
 
 project()
 
-cc_binary(
-    name = "pytox.so",
-    srcs = glob([
-        "pytox/*.c",
-        "pytox/*.h",
-    ]),
-    copts = [
-        "-DENABLE_AV",
-        "-Wno-strict-aliasing",
+genrule(
+    name = "pytox/core",
+    srcs = [
+        "pytox/src/core.pyx",
+        "//c-toxcore:tox/tox.h",
     ],
-    linkopts = select({
-        "@toktok//tools/config:freebsd": ["-Wl,--version-script,$(location pytox.ld)"],
-        "@toktok//tools/config:linux": ["-Wl,--version-script,$(location pytox.ld)"],
-        "@toktok//tools/config:osx": [],
-    }),
-    linkshared = True,
+    outs = ["pytox/core.pyx"],
+    cmd = "$(location //py_toxcore_c/tools:gen_api) $(location pytox/src/core.pyx) $(location //c-toxcore:tox/tox.h) > $@",
+    tools = ["//py_toxcore_c/tools:gen_api"],
+)
+
+pyx_library(
+    name = "pytox",
+    srcs = [
+        "pytox/av.pyx",
+        "pytox/core.pyx",
+    ],
+    cdeps = ["//c-toxcore"],
+    cython_directives = {"language_level": "3"},
     visibility = ["//visibility:public"],
-    deps = [
-        "pytox.ld",
-        "//c-toxcore",
-        "@python3//:python",
-    ],
 )
