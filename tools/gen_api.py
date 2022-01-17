@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-
 import os.path
 import sys
-from typing import Iterable, List, Sequence, Tuple
+from typing import Iterable
+from typing import List
+from typing import Sequence
+from typing import Tuple
 
 
 def tokenize(line: str) -> Tuple[str, ...]:
