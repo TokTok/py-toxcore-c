@@ -1,0 +1,8 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+[py_test(
+    name = src[:-3],
+    size = "small",
+    srcs = [src],
+    deps = ["//py_toxcore_c:pytox"],
+) for src in glob(["**/*.py"])]

@@ -5,55 +5,55 @@ on:
     branches: [master]
 
 jobs:
-  build:
-    name: python-${{ matrix.version }}
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        include:
-        - version: "2.7"
-        - version: "3.5"
-        - version: "3.6"
-        - version: "3.8"
-        - version: "3.9"
-        - version: "3.10"
-
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.version }}
-    - name: Install
-      run: |
-        sudo apt update
-        sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
-    - name: Build
-      run: python setup.py build_ext --inplace
-    - name: Test
-      run: PYTHONPATH=. python tests/tests.py
-
-  coverage:
-    name: python-3.7-coverage
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: "3.7"
-    - name: Install
-      run: |
-        sudo apt update
-        sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
-    - name: Build
-      run: |
-        export CFLAGS="-fprofile-arcs -ftest-coverage"
-        python setup.py build_ext --inplace
-    - name: Test
-      run: PYTHONPATH=. python tests/tests.py
-    - name: Upload coverage
-      run: bash <(curl -s https://codecov.io/bash)
+# build:
+#   name: python-${{ matrix.version }}
+#   runs-on: ubuntu-latest
+#
+#   strategy:
+#     matrix:
+#       include:
+#       - version: "2.7"
+#       - version: "3.5"
+#       - version: "3.6"
+#       - version: "3.8"
+#       - version: "3.9"
+#       - version: "3.10"
+#
+#   steps:
+#   - uses: actions/checkout@v2
+#   - uses: actions/setup-python@v2
+#     with:
+#       python-version: ${{ matrix.version }}
+#   - name: Install
+#     run: |
+#       sudo apt update
+#       sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
+#   - name: Build
+#     run: python setup.py build_ext --inplace
+#   - name: Test
+#     run: PYTHONPATH=. python tests/tests.py
+#
+# coverage:
+#   name: python-3.7-coverage
+#   runs-on: ubuntu-latest
+#
+#   steps:
+#   - uses: actions/checkout@v2
+#   - uses: actions/setup-python@v2
+#     with:
+#       python-version: "3.7"
+#   - name: Install
+#     run: |
+#       sudo apt update
+#       sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
+#   - name: Build
+#     run: |
+#       export CFLAGS="-fprofile-arcs -ftest-coverage"
+#       python setup.py build_ext --inplace
+#   - name: Test
+#     run: PYTHONPATH=. python tests/tests.py
+#   - name: Upload coverage
+#     run: bash <(curl -s https://codecov.io/bash)
 
   docker:
     runs-on: ubuntu-latest
@@ -63,16 +63,16 @@ jobs:
     - name: Build
       run: docker build -t pytox .
 
-  clang-analyze:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Install
-      run: |
-        sudo apt update
-        sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
-    - name: Build
-      run: |
-        clang -fsyntax-only pytox/*.c -Werror -Weverything -Wno-reserved-id-macro -Wno-documentation-deprecated-sync -Wno-shorten-64-to-32 -Wno-unused-parameter -Wno-missing-field-initializers -Wno-sign-conversion -Wno-padded -Wno-conversion $(pkg-config --cflags-only-I python3)
-        clang --analyze pytox/*.c $(pkg-config --cflags-only-I python3)
+# clang-analyze:
+#   runs-on: ubuntu-latest
+#
+#   steps:
+#   - uses: actions/checkout@v2
+#   - name: Install
+#     run: |
+#       sudo apt update
+#       sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
+#   - name: Build
+#     run: |
+#       clang -fsyntax-only pytox/*.c -Werror -Weverything -Wno-reserved-id-macro -Wno-documentation-deprecated-sync -Wno-shorten-64-to-32 -Wno-unused-parameter -Wno-missing-field-initializers -Wno-sign-conversion -Wno-padded -Wno-conversion $(pkg-config --cflags-only-I python3)
+#       clang --analyze pytox/*.c $(pkg-config --cflags-only-I python3)
