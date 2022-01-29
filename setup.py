@@ -17,9 +17,9 @@ setup(
     url="http://github.com/TokTok/py-toxcore-c",
     license="GPL",
     ext_modules=[
-        Extension(
-            "pytox.av", ["pytox/av.c"], extra_compile_args=cflags, libraries=libraries
-        ),
+        Extension("pytox.av", ["pytox/av.c"],
+                  extra_compile_args=cflags,
+                  libraries=libraries),
         Extension(
             "pytox.core",
             ["pytox/core.c"],

@@ -37,7 +37,7 @@ def needs_space(l: str, r: str) -> bool:
 def untokenize(tokens: Tuple[str, ...]) -> str:
     line = []
     for i in range(len(tokens) - 1):
-        if tokens[i : i + 2] == ("void", ")"):
+        if tokens[i:i + 2] == ("void", ")"):
             break
         line.append(tokens[i])
         if needs_space(tokens[i], tokens[i + 1]):
@@ -74,9 +74,8 @@ def parse_params(tokens: Tuple[str, ...]) -> List[Tuple[List[str], str]]:
     return params
 
 
-def finalize_handler(
-    type_prefix: str, handlers: List[str], event: str, params: List[str]
-) -> None:
+def finalize_handler(type_prefix: str, handlers: List[str], event: str,
+                     params: List[str]) -> None:
     handlers[-1] += ":"
     self = ""
     array = ""
@@ -127,9 +126,8 @@ def handle_macro(tokens: Sequence[str], state: List[str]) -> bool:
     return False
 
 
-def handle_types(
-    tokens: Sequence[str], state: List[str], extern: List[str], const_prefix: str
-) -> bool:
+def handle_types(tokens: Sequence[str], state: List[str], extern: List[str],
+                 const_prefix: str) -> bool:
     # struct definitions (members are ignored)
     if tokens[0] == "struct" and tokens[-1] == "{":
         state.append("struct")
@@ -141,7 +139,8 @@ def handle_types(
         extern.append(f"    ctypedef struct {tokens[2]}")
 
     # enums
-    if (tokens[:2] == ("typedef", "enum") or tokens[0] == "enum") and tokens[-1] == "{":
+    if (tokens[:2] == ("typedef", "enum")
+            or tokens[0] == "enum") and tokens[-1] == "{":
         extern.append("")
         extern.append(f"    cpdef enum {tokens[-2]}:")
         state.append("enum")
@@ -152,23 +151,20 @@ def handle_types(
 
 
 def handle_functions(
-    tokens: Tuple[str, ...],
-    state: List[str],
-    extern: List[str],
-    fun_prefix: str,
-    type_prefix: str,
-    event: str,
-    params: List[str],
-    handlers: List[str],
-    install_handlers: List[str],
+        tokens: Tuple[str, ...],
+        state: List[str],
+        extern: List[str],
+        fun_prefix: str,
+        type_prefix: str,
+        event: str,
+        params: List[str],
+        handlers: List[str],
+        install_handlers: List[str],
 ) -> str:
     # functions and callbacks
-    if (
-        "(" in tokens
-        and tokens[0].isidentifier()
-        and token_before("(", tokens).startswith(fun_prefix)
-        and tokens[0] != "typedef"
-    ):
+    if ("(" in tokens and tokens[0].isidentifier()
+            and token_before("(", tokens).startswith(fun_prefix)
+            and tokens[0] != "typedef"):
         extern.append(f"    cdef {untokenize_fun(tokens)}")
         if ";" not in tokens:
             state.append("fun")
@@ -176,17 +172,17 @@ def handle_functions(
     if tokens[:2] == ("typedef", "void"):
         extern.append(f"    c{untokenize_fun(tokens)}")
 
-        event = tokens[2][len(fun_prefix) : -3]
+        event = tokens[2][len(fun_prefix):-3]
         params.clear()
         params.extend(tokens[3:])
 
         # TODO(iphydf): Handle this better (by checking whether we have a callback install
         # function for this event).
         if event != "log":
-            handlers.append(f"cdef void handle_{untokenize_fun((event,) + tokens[3:])}")
+            handlers.append(
+                f"cdef void handle_{untokenize_fun((event,) + tokens[3:])}")
             install_handlers.append(
-                f"    {fun_prefix}callback_{event}(ptr, handle_{event})"
-            )
+                f"    {fun_prefix}callback_{event}(ptr, handle_{event})")
         if ";" not in tokens:
             state.append("callback")
         else:
@@ -278,14 +274,12 @@ def main() -> None:
         for line in src_fh.readlines():
             if line.startswith("cdef extern from"):
                 with open(api, "r", encoding="utf-8") as api_fh:
-                    print(
-                        "\n".join(
-                            gen_cython(
-                                api_fh.readlines(),
-                                fun_prefix=os.path.split(api)[-1].split(".")[0] + "_",
-                            )
-                        )
-                    )
+                    print("\n".join(
+                        gen_cython(
+                            api_fh.readlines(),
+                            fun_prefix=os.path.split(api)[-1].split(".")[0] +
+                            "_",
+                        )))
             else:
                 print(line.rstrip())
 
