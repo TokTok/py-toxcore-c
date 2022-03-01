@@ -12,6 +12,7 @@ RUN apt-get update \
  libopus-dev \
  libsodium-dev \
  libvpx-dev \
+ libmsgpack-dev \
  ninja-build \
  pkg-config \
  python3 \
