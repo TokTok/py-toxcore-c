@@ -44,10 +44,10 @@ jobs:
           -DTRACE=ON
           -DMUST_BUILD_TOXAV=ON
       - run: cd c-toxcore/_build && ninja install -j$(nproc)
-#     - run:
-#         export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address";
-#         export LDFLAGS="-L$PWD/c-toxcore/_install/lib -Wl,-rpath,$PWD/c-toxcore/_install/lib";
-#         python3 setup.py build_ext --inplace
+      - run:
+          export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address";
+          export LDFLAGS="-L$PWD/c-toxcore/_install/lib -Wl,-rpath,$PWD/c-toxcore/_install/lib";
+          python3 setup.py build_ext --inplace
 #     - run: ASAN_OPTIONS=detect_leaks=0
 #         LD_PRELOAD=libasan.so.5
 #         PYTHONPATH=.
