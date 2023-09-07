@@ -17,14 +17,19 @@ setup(
     url="http://github.com/TokTok/py-toxcore-c",
     license="GPL",
     ext_modules=[
-        Extension("pytox.av", ["pytox/av.c"],
+        Extension(f"pytox.{mod}", [f"pytox/{mod}.c"],
                   extra_compile_args=cflags,
-                  libraries=libraries),
-        Extension(
-            "pytox.core",
-            ["pytox/core.c"],
-            extra_compile_args=cflags,
-            libraries=libraries,
-        ),
-    ],
+                  libraries=libraries)
+        for mod in (
+            "av",
+            "core",
+            "error",
+            "log",
+            "memory",
+            "network",
+            "options",
+            "random",
+            "system",
+            "time",
+            )],
 )

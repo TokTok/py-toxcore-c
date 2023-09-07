@@ -5,23 +5,59 @@ package(features = ["layering_check"])
 
 project()
 
+SUBSYSTEMS = [
+    "log",
+    "memory",
+    "network",
+    "options",
+    "random",
+    "system",
+    "time",
+]
+
+[genrule(
+    name = "pytox/" + sys,
+    srcs = [
+        "pytox/src/%s.pxd" % sys,
+        "pytox/src/%s.pyx" % sys,
+        "//c-toxcore:public",
+    ],
+    outs = [
+        "pytox/%s.pxd" % sys,
+        "pytox/%s.pyx" % sys,
+    ],
+    cmd = " ".join([
+        "$(location //py_toxcore_c/tools:gen_api)",
+        "$(location pytox/src/%s.pyx)" % sys,
+        "$(GENDIR)/c-toxcore",
+        "> $(location pytox/%s.pyx);" % sys,
+        "$(location //py_toxcore_c/tools:gen_api)",
+        "$(location pytox/src/%s.pxd)" % sys,
+        "$(GENDIR)/c-toxcore",
+        "> $(location pytox/%s.pxd)" % sys,
+    ]),
+    tools = ["//py_toxcore_c/tools:gen_api"],
+) for sys in SUBSYSTEMS]
+
 genrule(
     name = "pytox/core",
     srcs = [
         "pytox/src/core.pyx",
-        "//c-toxcore:tox/tox.h",
+        "//c-toxcore:tox/toxcore/tox.h",
     ],
     outs = ["pytox/core.pyx"],
-    cmd = "$(location //py_toxcore_c/tools:gen_api) $(location pytox/src/core.pyx) $(location //c-toxcore:tox/tox.h) > $@",
+    cmd = "$(location //py_toxcore_c/tools:gen_api) $(location pytox/src/core.pyx) $(GENDIR)/c-toxcore > $@",
     tools = ["//py_toxcore_c/tools:gen_api"],
 )
 
 pyx_library(
     name = "pytox",
     srcs = [
+        "pytox.pxd",
         "pytox/av.pyx",
         "pytox/core.pyx",
-    ],
+        "pytox/error.pyx",
+    ] + ["pytox/%s.pxd" % sys for sys in SUBSYSTEMS] + ["pytox/%s.pyx" % sys for sys in SUBSYSTEMS],
     cdeps = ["//c-toxcore"],
     cython_directives = {"language_level": "3"},
     visibility = ["//visibility:public"],
