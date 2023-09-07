@@ -76,6 +76,7 @@ def parse_params(tokens: Tuple[str, ...]) -> List[Tuple[List[str], str]]:
 
 def finalize_handler(type_prefix: str, handlers: List[str], event: str,
                      params: List[str]) -> None:
+    #handlers[-1] += " noexcept"
     handlers[-1] += ":"
     self = ""
     array = ""
@@ -114,6 +115,12 @@ def handle_ignore(tokens: Sequence[str], state: List[str]) -> bool:
     return False
 
 
+def handle_nullable(tokens: Sequence[str], state: List[str]) -> bool:
+    if tokens[0] in ("non_null", "nullable"):
+        return True  # skip the entire line
+    return False
+
+
 def handle_macro(tokens: Sequence[str], state: List[str]) -> bool:
     if tokens[0] == "#define":
         if tokens[-1] == "\\":
@@ -141,11 +148,15 @@ def handle_types(tokens: Sequence[str], state: List[str], extern: List[str],
     # enums
     if (tokens[:2] == ("typedef", "enum")
             or tokens[0] == "enum") and tokens[-1] == "{":
-        extern.append("")
-        extern.append(f"    cpdef enum {tokens[-2]}:")
+        enum_name = tokens[-2]
+        if enum_name != "Tox_Log_Level":
+            extern.append("")
+            extern.append(f"    cpdef enum {enum_name}:")
         state.append("enum")
     elif state[-1] == "enum" and tokens[0].startswith(const_prefix):
-        extern.append(f"        {tokens[0]},")
+        enumerator_name = tokens[0]
+        if not enumerator_name.startswith("TOX_LOG_LEVEL"):
+            extern.append(f"        {enumerator_name},")
 
     return False
 
@@ -207,7 +218,7 @@ def handle_functions(
     return event
 
 
-def gen_cython(lines: Sequence[str], fun_prefix: str) -> List[str]:
+def gen_cython(lines: Sequence[str], fun_prefix: str, extern_line: str) -> List[str]:
     const_prefix = fun_prefix.upper()
     type_prefix = fun_prefix.capitalize()
 
@@ -215,11 +226,11 @@ def gen_cython(lines: Sequence[str], fun_prefix: str) -> List[str]:
 
     extern = []
     handlers: List[str] = []
-    install_handlers = ["cdef void install_handlers(Tox *ptr):"]
+    install_handlers: List[str] = []
     params: List[str] = []
     event = ""
 
-    extern.append('cdef extern from "tox/tox.h":')
+    extern.append(extern_line)
     for line in lines:
         line = line.strip()
         tokens = tokenize(line)
@@ -231,6 +242,9 @@ def gen_cython(lines: Sequence[str], fun_prefix: str) -> List[str]:
             continue
 
         if handle_ignore(tokens, state):
+            continue
+
+        if handle_nullable(tokens, state):
             continue
 
         if handle_macro(tokens, state):
@@ -263,22 +277,38 @@ def gen_cython(lines: Sequence[str], fun_prefix: str) -> List[str]:
             install_handlers,
         )
 
+    if install_handlers:
+        install_handlers = (
+                ["cdef void install_handlers(Tox *ptr):"] + install_handlers)
     return extern + [""] + handlers + [""] + install_handlers
+
+
+def get_fun_prefix(api: str) -> str:
+    return os.path.split(api)[-1].split(".")[0].split("_")[0] + "_"
 
 
 def main() -> None:
     src = sys.argv[1]
-    api = sys.argv[2]
+    api_base = sys.argv[2]
+
+    cdef_extern_prefix = "cdef extern from \""
+    cdef_extern_suffix = "\": pass\n"
 
     with open(src, "r", encoding="utf-8") as src_fh:
         for line in src_fh.readlines():
-            if line.startswith("cdef extern from"):
+            if (line.startswith(cdef_extern_prefix) and
+                    line.endswith(cdef_extern_suffix)):
+                api_file = (line
+                        .removeprefix(cdef_extern_prefix)
+                        .removesuffix(cdef_extern_suffix))
+                api = os.path.join(api_base, api_file)
+                extern_line = line.removesuffix(" pass\n")
                 with open(api, "r", encoding="utf-8") as api_fh:
                     print("\n".join(
                         gen_cython(
                             api_fh.readlines(),
-                            fun_prefix=os.path.split(api)[-1].split(".")[0] +
-                            "_",
+                            fun_prefix=get_fun_prefix(api),
+                            extern_line=extern_line,
                         )))
             else:
                 print(line.rstrip())

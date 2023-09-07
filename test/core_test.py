@@ -1,6 +1,8 @@
 import unittest
 
 from pytox import core
+from pytox import error
+from pytox import options
 
 
 class CoreTest(unittest.TestCase):
@@ -8,25 +10,25 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(len(core.VERSION.split(".")), 3)
 
     def test_options(self):
-        opts = core.ToxOptions()
+        opts = options.ToxOptions()
         self.assertTrue(opts.ipv6_enabled)
         opts.ipv6_enabled = False
         self.assertFalse(opts.ipv6_enabled)
 
     def test_use_after_free(self):
-        opts = core.ToxOptions()
-        with self.assertRaises(core.UseAfterFreeException):
+        opts = options.ToxOptions()
+        with self.assertRaises(error.UseAfterFreeException):
             with core.Core(opts) as tox:
                 saved_tox = tox
             print(saved_tox.address)
 
     def test_address(self):
-        opts = core.ToxOptions()
+        opts = options.ToxOptions()
         with core.Core(opts) as tox:
             self.assertEqual(tox.address, tox.address)
 
     def test_public_key_is_address_prefix(self):
-        opts = core.ToxOptions()
+        opts = options.ToxOptions()
         with core.Core(opts) as tox:
             self.assertEqual(
                 tox.public_key.hex()[:72] + format(tox.nospam, "08x"),
@@ -34,7 +36,7 @@ class CoreTest(unittest.TestCase):
             )
 
     def test_public_key_is_not_secret_key(self):
-        opts = core.ToxOptions()
+        opts = options.ToxOptions()
         with core.Core(opts) as tox:
             self.assertNotEqual(tox.public_key, tox.secret_key)
 
@@ -49,7 +51,7 @@ class CoreTest(unittest.TestCase):
             self.assertEqual(tox.name, b"iphy")
 
             tox.name = b"x" * core.MAX_NAME_LENGTH
-            with self.assertRaises(core.ApiException):
+            with self.assertRaises(error.ApiException):
                 tox.name = b"x" * (core.MAX_NAME_LENGTH + 1)
 
     def test_set_status_message(self):
@@ -59,7 +61,7 @@ class CoreTest(unittest.TestCase):
             self.assertEqual(tox.status_message, b"pytox is cool now")
 
             tox.status_message = b"x" * core.MAX_STATUS_MESSAGE_LENGTH
-            with self.assertRaises(core.ApiException):
+            with self.assertRaises(error.ApiException):
                 tox.status_message = b"x" * (core.MAX_STATUS_MESSAGE_LENGTH +
                                              1)
 
@@ -76,9 +78,9 @@ class CoreTest(unittest.TestCase):
             with core.Core() as tox2:
                 tox1.friend_add(tox2.address, b"hello there!")
                 tox2.friend_add_norequest(tox1.public_key)
-                with self.assertRaises(core.LengthException):
+                with self.assertRaises(error.LengthException):
                     tox2.friend_add_norequest(tox1.address)
-                with self.assertRaises(core.LengthException):
+                with self.assertRaises(error.LengthException):
                     tox2.friend_add(tox1.public_key, b"oh no!")
 
     def test_friend_delete(self):
@@ -86,7 +88,7 @@ class CoreTest(unittest.TestCase):
             with core.Core() as tox2:
                 tox1.friend_add(tox2.address, b"hello there!")
                 tox1.friend_delete(0)
-                with self.assertRaises(core.ApiException):
+                with self.assertRaises(error.ApiException):
                     # Deleting again: we don't have that friend anymore.
                     tox1.friend_delete(0)
 
