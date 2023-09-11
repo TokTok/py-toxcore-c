@@ -1,8 +1,6 @@
 import unittest
 
-from pytox import core
-from pytox import error
-from pytox import options
+from pytox import core, error, options
 
 
 class CoreTest(unittest.TestCase):
