@@ -62,8 +62,7 @@ class CoreTest(unittest.TestCase):
 
             tox.status_message = b"x" * core.MAX_STATUS_MESSAGE_LENGTH
             with self.assertRaises(error.ApiException):
-                tox.status_message = b"x" * (core.MAX_STATUS_MESSAGE_LENGTH +
-                                             1)
+                tox.status_message = b"x" * (core.MAX_STATUS_MESSAGE_LENGTH + 1)
 
     def test_set_status(self):
         with core.Core() as tox:
