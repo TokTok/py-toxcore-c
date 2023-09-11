@@ -22,8 +22,7 @@ setup(
             [f"pytox/{mod}.c"],
             extra_compile_args=cflags,
             libraries=libraries,
-        )
-        for mod in (
+        ) for mod in (
             "av",
             "core",
             "error",
