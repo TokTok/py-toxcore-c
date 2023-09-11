@@ -41,5 +41,3 @@ cdef class ToxOptions:
     @ipv6_enabled.setter
     def ipv6_enabled(self, value: bool):
         tox_options_set_ipv6_enabled(self._get(), value)
-
-
