@@ -279,7 +279,7 @@ def gen_cython(lines: Sequence[str], fun_prefix: str, extern_line: str) -> List[
 
     if install_handlers:
         install_handlers = (
-                ["cdef void install_handlers(Tox *ptr):"] + install_handlers)
+            ["cdef void install_handlers(Tox *ptr):"] + install_handlers)
     return extern + [""] + handlers + [""] + install_handlers
 
 
@@ -299,8 +299,8 @@ def main() -> None:
             if (line.startswith(cdef_extern_prefix) and
                     line.endswith(cdef_extern_suffix)):
                 api_file = (line
-                        .removeprefix(cdef_extern_prefix)
-                        .removesuffix(cdef_extern_suffix))
+                            .removeprefix(cdef_extern_prefix)
+                            .removesuffix(cdef_extern_suffix))
                 api = os.path.join(api_base, api_file)
                 extern_line = line.removesuffix(" pass\n")
                 with open(api, "r", encoding="utf-8") as api_fh:
