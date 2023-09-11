@@ -1,5 +1,4 @@
-from distutils.core import Extension
-from distutils.core import setup
+from distutils.core import Extension, setup
 
 libraries = [
     "toxcore",
