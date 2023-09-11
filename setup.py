@@ -31,5 +31,5 @@ setup(
             "random",
             "system",
             "time",
-            )],
+        )],
 )
