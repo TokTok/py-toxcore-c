@@ -30,7 +30,7 @@ jobs:
           pkg-config
           python3-dev
           python3-setuptools
-      - run: git clone --depth=1 https://github.com/TokTok/c-toxcore
+      - run: git clone --depth=1 --recursive https://github.com/TokTok/c-toxcore
       - run: cd c-toxcore;
           . .github/scripts/flags-gcc.sh;
           add_flag -fsanitize=address;

@@ -1,11 +1,10 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 LABEL maintainer="iphydf@gmail.com"
 
 RUN apt-get update \
  && DEBIAN_FRONTEND="noninteractive" apt-get install --no-install-recommends -y \
  ca-certificates \
  cmake \
- cython \
  gcc \
  g++ \
  git \
@@ -19,10 +18,10 @@ RUN apt-get update \
  python3-pip \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
- && pip3 install mypy
+ && pip3 install cython mypy
 
 WORKDIR /build
-RUN git clone --depth=1 https://github.com/TokTok/c-toxcore /build/c-toxcore \
+RUN git clone --depth=1 --recursive https://github.com/TokTok/c-toxcore /build/c-toxcore \
  && cmake -GNinja -B/build/c-toxcore/_build -H/build/c-toxcore \
  -DBOOTSTRAP_DAEMON=OFF \
  -DENABLE_STATIC=OFF \

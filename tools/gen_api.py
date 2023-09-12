@@ -76,7 +76,7 @@ def parse_params(tokens: Tuple[str, ...]) -> List[Tuple[List[str], str]]:
 
 def finalize_handler(type_prefix: str, handlers: List[str], event: str,
                      params: List[str]) -> None:
-    handlers[-1] += ":"
+    handlers[-1] += " noexcept:"
     self = ""
     array = ""
     args = []
