@@ -4,5 +4,6 @@ load("@rules_python//python:defs.bzl", "py_test")
     name = src[:-3],
     size = "small",
     srcs = [src],
+    tags = ["no-cross"],
     deps = ["//py_toxcore_c:pytox"],
 ) for src in glob(["**/*.py"])]

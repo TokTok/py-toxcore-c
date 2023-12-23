@@ -1,8 +1,6 @@
 load("//third_party/python:build_defs.bzl", "pyx_library")
 load("//tools/project:build_defs.bzl", "project")
 
-package(features = ["layering_check"])
-
 project()
 
 genrule(
@@ -24,5 +22,6 @@ pyx_library(
     ],
     cdeps = ["//c-toxcore"],
     cython_directives = {"language_level": "3"},
+    tags = ["no-cross"],
     visibility = ["//visibility:public"],
 )
