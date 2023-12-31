@@ -1,7 +1,7 @@
 load("//third_party/python:build_defs.bzl", "pyx_library")
 load("//tools/project:build_defs.bzl", "project")
 
-project()
+project(license = "gpl3-https")
 
 genrule(
     name = "pytox/core",
