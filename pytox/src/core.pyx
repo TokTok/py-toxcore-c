@@ -6,7 +6,11 @@ from libcpp cimport bool
 from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t
 from libc.stdlib cimport malloc, free
 
-cdef extern from "tox/tox.h": pass
+from pytox import error
+from pytox.options cimport Tox_Options, ToxOptions
+from pytox.system cimport Tox_System
+
+cdef extern from "tox/toxcore/tox.h": pass
 
 
 VERSION: str = "%d.%d.%d" % (tox_version_major(), tox_version_minor(), tox_version_patch())
@@ -28,72 +32,22 @@ MAX_FILENAME_LENGTH: int = tox_max_filename_length()
 MAX_HOSTNAME_LENGTH: int = tox_max_hostname_length()
 
 
-class UseAfterFreeException(Exception):
-    def __init__(self):
-        super().__init__(
-                "object used after it was killed/freed (or it was never initialised)")
-
-class ToxException(Exception):
-    pass
-
-class ApiException(ToxException):
-    def __init__(self, err):
-        super().__init__(err)
-        self.error = err
-
-class LengthException(ToxException):
-    pass
-
 cdef void _check_len(str name, bytes data, int expected_length) except *:
     if len(data) != expected_length:
-        raise LengthException(
+        raise error.LengthException(
                 f"parameter '{name}' received bytes of invalid"
                 f"length {len(data)}, expected {expected_length}")
-
-
-cdef class ToxOptions:
-
-    cdef Tox_Options *_ptr
-
-    def __init__(self):
-        cdef Tox_Err_Options_New err = TOX_ERR_OPTIONS_NEW_OK
-        self._ptr = tox_options_new(&err)
-        if err: raise ApiException(Tox_Err_Options_New(err))
-
-    def __dealloc__(self):
-        self.__exit__(None, None, None)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        tox_options_free(self._ptr)
-        self._ptr = NULL
-
-    cdef Tox_Options *_get(self) except *:
-        if self._ptr is NULL:
-            raise UseAfterFreeException()
-        return self._ptr
-
-    @property
-    def ipv6_enabled(self) -> bool:
-        return tox_options_get_ipv6_enabled(self._get())
-
-    @ipv6_enabled.setter
-    def ipv6_enabled(self, value: bool):
-        tox_options_set_ipv6_enabled(self._get(), value)
-
 
 cdef class Core:
 
     cdef Tox *_ptr
 
     def __init__(self, options: ToxOptions = None):
-        cdef Tox_Err_New err = TOX_ERR_NEW_OK
+        err = TOX_ERR_NEW_OK
         if options is None:
             options = ToxOptions()
-        self._ptr = tox_new(options._ptr, &err)
-        if err: raise ApiException(Tox_Err_New(err))
+        self._ptr = tox_new(options._get(), &err)
+        if err: raise error.ApiException(Tox_Err_New(err))
 
         install_handlers(self._get())
 
@@ -109,13 +63,13 @@ cdef class Core:
 
     cdef Tox *_get(self) except *:
         if self._ptr is NULL:
-            raise UseAfterFreeException()
+            raise error.UseAfterFreeException()
         return self._ptr
 
     @property
     def savedata(self) -> bytes:
-        cdef size_t size = tox_get_savedata_size(self._get())
-        cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        size = tox_get_savedata_size(self._get())
+        data = <uint8_t*> malloc(size * sizeof(uint8_t))
         try:
             tox_get_savedata(self._get(), data)
             return data[:size]
@@ -124,7 +78,7 @@ cdef class Core:
 
     def bootstrap(self, host: str, port: int, public_key: bytes) -> bool:
         _check_len("public_key", public_key, tox_public_key_size())
-        cdef Tox_Err_Bootstrap err = TOX_ERR_BOOTSTRAP_OK
+        err = TOX_ERR_BOOTSTRAP_OK
         return tox_bootstrap(self._get(), host.encode("utf-8"), port, public_key, &err)
 
     @property
@@ -143,8 +97,8 @@ cdef class Core:
 
     @property
     def address(self) -> bytes:
-        cdef size_t size = tox_address_size()
-        cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        size = tox_address_size()
+        data = <uint8_t*> malloc(size * sizeof(uint8_t))
         try:
             tox_self_get_address(self._get(), data)
             return data[:size]
@@ -157,8 +111,8 @@ cdef class Core:
 
     @property
     def public_key(self) -> bytes:
-        cdef size_t size = tox_public_key_size()
-        cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        size = tox_public_key_size()
+        data = <uint8_t*> malloc(size * sizeof(uint8_t))
         try:
             tox_self_get_public_key(self._get(), data)
             return data[:tox_public_key_size()]
@@ -167,8 +121,8 @@ cdef class Core:
 
     @property
     def secret_key(self) -> bytes:
-        cdef size_t size = tox_secret_key_size()
-        cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        size = tox_secret_key_size()
+        data = <uint8_t*> malloc(size * sizeof(uint8_t))
         try:
             tox_self_get_secret_key(self._get(), data)
             return data[:tox_secret_key_size()]
@@ -177,8 +131,8 @@ cdef class Core:
 
     @property
     def name(self) -> bytes:
-        cdef size_t size = tox_self_get_name_size(self._get())
-        cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        size = tox_self_get_name_size(self._get())
+        data = <uint8_t*> malloc(size * sizeof(uint8_t))
         try:
             tox_self_get_name(self._get(), data)
             return data[:size]
@@ -187,14 +141,14 @@ cdef class Core:
 
     @name.setter
     def name(self, name: bytes) -> None:
-        cdef Tox_Err_Set_Info err = TOX_ERR_SET_INFO_OK
+        err = TOX_ERR_SET_INFO_OK
         tox_self_set_name(self._get(), name, len(name), &err)
-        if err: raise ApiException(Tox_Err_Set_Info(err))
+        if err: raise error.ApiException(Tox_Err_Set_Info(err))
 
     @property
     def status_message(self) -> bytes:
-        cdef size_t size = tox_self_get_status_message_size(self._get())
-        cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        size = tox_self_get_status_message_size(self._get())
+        data = <uint8_t*> malloc(size * sizeof(uint8_t))
         try:
             tox_self_get_status_message(self._get(), data)
             return data[:size]
@@ -203,9 +157,9 @@ cdef class Core:
 
     @status_message.setter
     def status_message(self, status_message: bytes) -> None:
-        cdef Tox_Err_Set_Info err = TOX_ERR_SET_INFO_OK
+        err = TOX_ERR_SET_INFO_OK
         tox_self_set_status_message(self._get(), status_message, len(status_message), &err)
-        if err: raise ApiException(Tox_Err_Set_Info(err))
+        if err: raise error.ApiException(Tox_Err_Set_Info(err))
 
     @property
     def status(self) -> Tox_User_Status:
@@ -217,17 +171,17 @@ cdef class Core:
 
     def friend_add(self, address: bytes, message: bytes):
         _check_len("address", address, tox_address_size())
-        cdef Tox_Err_Friend_Add err = TOX_ERR_FRIEND_ADD_OK
+        err = TOX_ERR_FRIEND_ADD_OK
         tox_friend_add(self._get(), address, message, len(message), &err)
-        if err: raise ApiException(Tox_Err_Friend_Add(err))
+        if err: raise error.ApiException(Tox_Err_Friend_Add(err))
 
     def friend_add_norequest(self, public_key: bytes):
         _check_len("public_key", public_key, tox_public_key_size())
-        cdef Tox_Err_Friend_Add err = TOX_ERR_FRIEND_ADD_OK
+        err = TOX_ERR_FRIEND_ADD_OK
         tox_friend_add_norequest(self._get(), public_key, &err)
-        if err: raise ApiException(Tox_Err_Friend_Add(err))
+        if err: raise error.ApiException(Tox_Err_Friend_Add(err))
 
     def friend_delete(self, friend_number: int):
-        cdef Tox_Err_Friend_Delete err = TOX_ERR_FRIEND_DELETE_OK
+        err = TOX_ERR_FRIEND_DELETE_OK
         tox_friend_delete(self._get(), friend_number, &err)
-        if err: raise ApiException(Tox_Err_Friend_Delete(err))
+        if err: raise error.ApiException(Tox_Err_Friend_Delete(err))
