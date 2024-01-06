@@ -21,7 +21,8 @@ setup(
             "pytox.toxav.toxav",
             ["pytox/toxav/toxav.c"],
             extra_compile_args=cflags,
-            libraries=libraries),
+            libraries=libraries,
+        ),
         Extension(
             "pytox.toxcore.tox",
             ["pytox/toxcore/tox.c"],
