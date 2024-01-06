@@ -1,10 +1,10 @@
 import time
 import unittest
 
-from pytox import core
+import pytox.toxcore.tox as core
 
 
-class TestTox(core.Core):
+class TestTox(core.Tox_Ptr):
     connection_status_from_cb = core.TOX_CONNECTION_NONE
 
     def handle_self_connection_status(self,
