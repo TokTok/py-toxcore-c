@@ -8,3 +8,5 @@
 *.o
 *.tox
 .mypy_cache
+# TODO(iphydf): Remove once .gen is removed from the name.
+*.gen.pyx
