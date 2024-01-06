@@ -30,11 +30,8 @@ RUN git clone --depth=1 --recursive https://github.com/TokTok/c-toxcore /build/c
  && ldconfig
 
 COPY pytox /build/pytox
-COPY tools /build/tools
 
-RUN mypy --strict tools/gen_api.py \
- && tools/gen_api.py pytox/src/core.pyx /usr/local/include/tox/tox.h > pytox/core.pyx \
- && cython pytox/av.pyx pytox/core.pyx
+RUN cython -I. $(find pytox -name "*.pyx")
 
 COPY setup.py /build/
 RUN python3 setup.py install \
