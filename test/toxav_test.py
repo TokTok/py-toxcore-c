@@ -1,11 +1,11 @@
 import unittest
 
-from pytox import av
+import pytox.toxav.toxav as av
 
 
 class AvTest(unittest.TestCase):
     def test_version(self):
-        self.assertEqual(av, av)
+        self.assertEqual(av.foo(), av.foo())
 
 
 if __name__ == "__main__":
