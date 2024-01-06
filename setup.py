@@ -16,13 +16,23 @@ setup(
     author_email="iphydf@gmail.com",
     url="http://github.com/TokTok/py-toxcore-c",
     license="GPL",
+    py_modules=["pytox.common"],
     ext_modules=[
-        Extension("pytox.av", ["pytox/av.c"],
-                  extra_compile_args=cflags,
-                  libraries=libraries),
         Extension(
-            "pytox.core",
-            ["pytox/core.c"],
+            "pytox.toxav.toxav",
+            ["pytox/toxav/toxav.c"],
+            extra_compile_args=cflags,
+            libraries=libraries,
+        ),
+        Extension(
+            "pytox.toxcore.tox",
+            ["pytox/toxcore/tox.c"],
+            extra_compile_args=cflags,
+            libraries=libraries,
+        ),
+        Extension(
+            "pytox.toxencryptsave.toxencryptsave",
+            ["pytox/toxencryptsave/toxencryptsave.c"],
             extra_compile_args=cflags,
             libraries=libraries,
         ),
