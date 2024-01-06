@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+REPO_DIR="$(dirname "$SCRIPT_DIR")"
+WORKSPACE_DIR="$(dirname "$REPO_DIR")"
+
+set -eux
+
+"$WORKSPACE_DIR/hs-apigen/tools/gen-python" "$REPO_DIR/pytox" \
+  "$WORKSPACE_DIR/c-toxcore/toxav/toxav.h" \
+  "$WORKSPACE_DIR/c-toxcore/toxcore/tox.h" \
+  "$WORKSPACE_DIR/c-toxcore/toxencryptsave/toxencryptsave.h"
+bazel build //py_toxcore_c:pytox

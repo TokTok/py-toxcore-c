@@ -1,7 +1,7 @@
 import time
 import unittest
 
-from pytox import core
+import pytox.toxcore.tox as core
 
 
 class TestTox(core.Core):
