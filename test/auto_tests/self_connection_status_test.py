@@ -28,12 +28,12 @@ class AutoTest(unittest.TestCase):
                 # Test that exceptions can pass through C code.
                 with self.assertRaises(TestException) as ex:
                     while (tox1.connection_status == core.TOX_CONNECTION_NONE
-                        or tox2.connection_status == core.TOX_CONNECTION_NONE):
+                           or tox2.connection_status == core.TOX_CONNECTION_NONE):
                         tox1.iterate()
                         tox2.iterate()
                         time.sleep(tox1.iteration_interval / 1000)
                     self.assertEqual(tox1.connection_status,
-                                    tox1.connection_status_from_cb)
+                                     tox1.connection_status_from_cb)
                 self.assertEqual(ex.exception.status, tox1.connection_status)
 
 
