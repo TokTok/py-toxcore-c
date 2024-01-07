@@ -1,6 +1,6 @@
-from dataclasses import dataclass
 import time
 import unittest
+from dataclasses import dataclass
 
 import pytox.toxcore.tox as core
 
