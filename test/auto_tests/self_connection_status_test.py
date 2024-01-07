@@ -13,9 +13,9 @@ class TestException(Exception):
 class TestTox(core.Tox_Ptr):
     connection_status_from_cb = core.TOX_CONNECTION_NONE
 
-    def handle_self_connection_status(
-        self, connection_status: core.Tox_Connection
-    ) -> None:
+    def handle_self_connection_status(self,
+                                      connection_status: core.Tox_Connection
+                                      ) -> None:
         print(connection_status)
         self.connection_status_from_cb = connection_status
         raise TestException(connection_status)
@@ -27,16 +27,14 @@ class AutoTest(unittest.TestCase):
             with TestTox(None) as tox2:
                 # Test that exceptions can pass through C code.
                 with self.assertRaises(TestException) as ex:
-                    while (
-                        tox1.connection_status == core.TOX_CONNECTION_NONE
-                        or tox2.connection_status == core.TOX_CONNECTION_NONE
-                    ):
+                    while (tox1.connection_status == core.TOX_CONNECTION_NONE
+                           or
+                           tox2.connection_status == core.TOX_CONNECTION_NONE):
                         tox1.iterate()
                         tox2.iterate()
                         time.sleep(tox1.iteration_interval / 1000)
-                    self.assertEqual(
-                        tox1.connection_status, tox1.connection_status_from_cb
-                    )
+                    self.assertEqual(tox1.connection_status,
+                                     tox1.connection_status_from_cb)
                 self.assertEqual(ex.exception.status, tox1.connection_status)
 
 
