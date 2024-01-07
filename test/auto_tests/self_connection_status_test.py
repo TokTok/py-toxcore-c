@@ -22,7 +22,7 @@ class TestTox(core.Tox_Ptr):
 
 
 class AutoTest(unittest.TestCase):
-    def test_connection_status_cb(self):
+    def test_connection_status_cb(self) -> None:
         with TestTox(None) as tox1:
             with TestTox(None) as tox2:
                 # Test that exceptions can pass through C code.
