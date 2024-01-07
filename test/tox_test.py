@@ -2,6 +2,7 @@ import unittest
 
 import pytox.toxcore.tox as c
 
+
 class ToxTest(unittest.TestCase):
     def test_version(self):
         self.assertEqual(len(c.VERSION.split(".")), 3)

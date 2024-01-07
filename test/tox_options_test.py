@@ -2,6 +2,7 @@ import unittest
 
 import pytox.toxcore.tox as c
 
+
 class ToxOptionsTest(unittest.TestCase):
     def test_options(self):
         opts = c.Tox_Options_Ptr()
