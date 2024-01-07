@@ -22,12 +22,14 @@ class LengthException(PytoxException):
 class UseAfterFreeException(Exception):
     def __init__(self):
         super().__init__(
-            "object used after it was killed/freed (or it was never initialised)")
+            "object used after it was killed/freed (or it was never initialised)"
+        )
 
 
 def _check_len(name: str, data: T, expected_length: int) -> T:
     if len(data) < expected_length:
         raise LengthException(
             f"parameter '{name}' received bytes of invalid"
-            f"length {len(data)}, expected at least {expected_length}")
+            f"length {len(data)}, expected at least {expected_length}"
+        )
     return data
