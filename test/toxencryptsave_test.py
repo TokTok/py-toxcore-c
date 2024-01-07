@@ -21,7 +21,8 @@ class ToxencryptsaveTest(unittest.TestCase):
             with c.Tox_Pass_Key_Ptr(b"hello", b"salt2") as pk2:
                 with self.assertRaises(c.ApiException) as ex:
                     pk2.decrypt(pk1.encrypt(b"hello world"))
-                self.assertEqual(ex.exception.error.name, c.TOX_ERR_DECRYPTION_FAILED.name)
+                self.assertEqual(ex.exception.error.name,
+                                 c.TOX_ERR_DECRYPTION_FAILED.name)
 
 
 if __name__ == "__main__":
