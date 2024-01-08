@@ -14,6 +14,7 @@ PACKAGES = [
     pytox.toxencryptsave.toxencryptsave,
 ]
 
+
 def process_class(name: str, cls: list[str], imports: set[str], attr: object) -> None:
     for mem in dir(attr):
         mem_attr = getattr(attr, mem)
@@ -22,7 +23,8 @@ def process_class(name: str, cls: list[str], imports: set[str], attr: object) ->
             cls.append(f"    def __enter__(self) -> Self: ...")
         elif mem == "__exit__":
             imports.add("from types import TracebackType")
-            cls.append("    def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None: ...")
+            cls.append(
+                "    def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None: ...")
         elif mem == "__init__" or "cython_function_or_method" in mem_attr.__class__.__name__:
             doc = mem_attr.__doc__.split('\n')[0]
             if " -> " not in doc:
@@ -96,7 +98,8 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
         attrs.append((sym, attr))
 
     consts: list[str] = []
-    classes: collections.OrderedDict[str, list[str]] = collections.OrderedDict()
+    classes: collections.OrderedDict[str,
+                                     list[str]] = collections.OrderedDict()
     imports: set[str] = set()
     missing: set[str] = {
         "Tox_Conference_Number",
