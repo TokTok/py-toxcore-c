@@ -1,8 +1,8 @@
-from typing import cast
 import unittest
+from typing import cast
 
-from pytox.toxcore import tox
 import pytox.toxav.toxav as av
+from pytox.toxcore import tox
 
 
 class AvTest(unittest.TestCase):
