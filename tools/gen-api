@@ -10,4 +10,5 @@ set -eux
   "$WORKSPACE_DIR/c-toxcore/toxav/toxav.h" \
   "$WORKSPACE_DIR/c-toxcore/toxcore/tox.h" \
   "$WORKSPACE_DIR/c-toxcore/toxencryptsave/toxencryptsave.h"
+bazel run //py_toxcore_c/tools:stubgen -- "$REPO_DIR"
 bazel build //py_toxcore_c:pytox
