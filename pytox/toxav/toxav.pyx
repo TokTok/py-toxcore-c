@@ -1,6 +1,8 @@
 # cython: language_level=3, linetrace=True
 from array import array
 from pytox import common
+from types import TracebackType
+from typing import Self
 
 class ApiException(common.ApiException): pass
 
@@ -48,7 +50,7 @@ cdef class Toxav_Ptr:
     def __dealloc__(self):
         self.__exit__(None, None, None)
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
     cdef Toxav* _new(self, tox.Tox_Ptr tox):
@@ -57,7 +59,7 @@ cdef class Toxav_Ptr:
         if error: raise ApiException(Toxav_Err_New(error))
         return ptr
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+    def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None:
         toxav_kill(self._ptr)
         self._ptr = NULL
 
@@ -69,5 +71,6 @@ cdef class Toxav_Ptr:
     def handle_video_receive_frame(self, friend_number: int, width: int, height: int, y: bytes, u: bytes, v: bytes, ystride: int, ustride: int, vstride: int) -> None: pass
 
     def __init__(self, tox.Tox_Ptr tox):
+        """Create new Toxav object."""
         self._ptr = self._new(tox)
         install_handlers(self, self._ptr)
