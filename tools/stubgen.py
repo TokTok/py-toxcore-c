@@ -24,9 +24,13 @@ def process_class(name: str, cls: list[str], imports: set[str], attr: object) ->
         elif mem == "__exit__":
             imports.add("from types import TracebackType")
             cls.append(
-                "    def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None: ...")
-        elif mem == "__init__" or "cython_function_or_method" in mem_attr.__class__.__name__:
-            doc = mem_attr.__doc__.split('\n')[0]
+                "    def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None: ..."
+            )
+        elif (
+            mem == "__init__"
+            or "cython_function_or_method" in mem_attr.__class__.__name__
+        ):
+            doc = mem_attr.__doc__.split("\n")[0]
             if " -> " not in doc:
                 doc += " -> None"
             if ": array" in doc:
@@ -46,7 +50,9 @@ def process_class(name: str, cls: list[str], imports: set[str], attr: object) ->
                 raise Exception((mem, mem_attr.__doc__, mem_attr.__class__))
 
 
-def process_type(sym: str, attr: object, imports: set[str], classes: dict[str, list[str]]) -> None:
+def process_type(
+    sym: str, attr: object, imports: set[str], classes: dict[str, list[str]]
+) -> None:
     if not isinstance(attr, type):
         return
 
@@ -70,7 +76,9 @@ def process_type(sym: str, attr: object, imports: set[str], classes: dict[str, l
         process_class(sym, cls, imports, attr)
 
 
-def process_value(sym: str, attr: object, consts: list[str], classes: dict[str, list[str]]) -> None:
+def process_value(
+    sym: str, attr: object, consts: list[str], classes: dict[str, list[str]]
+) -> None:
     if isinstance(attr, int):
         enum = tuple(c for c in classes.keys() if sym.startswith(c.upper()))
         if enum:
@@ -98,8 +106,7 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
         attrs.append((sym, attr))
 
     consts: list[str] = []
-    classes: collections.OrderedDict[str,
-                                     list[str]] = collections.OrderedDict()
+    classes: collections.OrderedDict[str, list[str]] = collections.OrderedDict()
     imports: set[str] = set()
     missing: set[str] = {
         "Tox_Conference_Number",
@@ -125,7 +132,7 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
         for m in sorted(missing):
             pyi.write(f"class {m}: ...\n")
         for cls in classes.values():
-            pyi.write('\n'.join(cls) + "\n")
+            pyi.write("\n".join(cls) + "\n")
         for c in consts:
             pyi.write(c + "\n")
 
