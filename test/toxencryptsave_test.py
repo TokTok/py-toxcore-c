@@ -18,7 +18,7 @@ class ToxencryptsaveTest(unittest.TestCase):
                                  b"hello world")
 
     def test_encrypt_decrypt_with_wrong_salt(self) -> None:
-        with c.Tox_Pass_Key_Ptr(b"hello", b"a" * 32) as pk1:
+        with c.Tox_Pass_Key_Ptr(passphrase=b"hello", salt=b"a" * 32) as pk1:
             with c.Tox_Pass_Key_Ptr(b"hello", b"b" * 32) as pk2:
                 with self.assertRaises(c.ApiException) as ex:
                     pk2.decrypt(pk1.encrypt(b"hello world"))

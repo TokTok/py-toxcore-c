@@ -29,7 +29,9 @@ jobs:
           ninja-build
           pkg-config
           python3-dev
+          python3-pip
           python3-setuptools
+      - run: pip install cython
       - run: git clone --depth=1 --recursive https://github.com/TokTok/c-toxcore
       - run: cd c-toxcore;
           . .github/scripts/flags-gcc.sh;
@@ -41,14 +43,14 @@ jobs:
           -DCMAKE_SHARED_LINKER_FLAGS="$LD_FLAGS"
           -DCMAKE_INSTALL_PREFIX:PATH="$PWD/_install"
           -DENABLE_STATIC=OFF
-          -DTRACE=ON
           -DMUST_BUILD_TOXAV=ON
       - run: cd c-toxcore/_build && ninja install -j$(nproc)
-#     - run:
-#         export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address";
-#         export LDFLAGS="-L$PWD/c-toxcore/_install/lib -Wl,-rpath,$PWD/c-toxcore/_install/lib";
-#         python3 setup.py build_ext --inplace
-#     - run: ASAN_OPTIONS=detect_leaks=0
-#         LD_PRELOAD=libasan.so.5
-#         PYTHONPATH=.
-#         python3 tests/tests.py
+      - run: |
+          export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address"
+          export LDFLAGS="-L$PWD/c-toxcore/_install/lib -Wl,-rpath,$PWD/c-toxcore/_install/lib"
+          cython -I. $(find pytox -name "*.pyx")
+          python3 setup.py build_ext --inplace
+      - run: ASAN_OPTIONS=detect_leaks=0
+          LD_PRELOAD=libasan.so.6
+          PYTHONPATH=.
+          python3 test/tox_test.py
