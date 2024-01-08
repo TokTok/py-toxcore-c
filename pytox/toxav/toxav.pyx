@@ -6,7 +6,10 @@ from typing import TypeVar
 
 T = TypeVar("T")
 
-class ApiException(common.ApiException): pass
+
+class ApiException(common.ApiException):
+    pass
+
 
 cdef:
     void py_handle_call(self: Toxav_Ptr, friend_number: int, audio_enabled: bool, video_enabled: bool) except *:
@@ -58,7 +61,8 @@ cdef class Toxav_Ptr:
     cdef Toxav* _new(self, tox.Tox_Ptr tox):
         cdef Toxav_Err_New error = TOXAV_ERR_NEW_OK
         cdef Toxav* ptr = toxav_new(tox._get() if tox else NULL, &error)
-        if error: raise ApiException(Toxav_Err_New(error))
+        if error:
+            raise ApiException(Toxav_Err_New(error))
         return ptr
 
     def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None:

@@ -1,12 +1,14 @@
 # cython: language_level=3, linetrace=True
-from array import array
 from pytox import common
 from types import TracebackType
 from typing import TypeVar
 
 T = TypeVar("T")
 
-class ApiException(common.ApiException): pass
+
+class ApiException(common.ApiException):
+    pass
+
 
 cdef:
     void py_handle_self_connection_status(self: Tox_Ptr, connection_status: Tox_Connection) except *:
@@ -327,7 +329,8 @@ cdef class Tox_Options_Ptr:
     cdef Tox_Options* _new(self):
         cdef Tox_Err_Options_New error = TOX_ERR_OPTIONS_NEW_OK
         cdef Tox_Options* ptr = tox_options_new(&error)
-        if error: raise ApiException(Tox_Err_Options_New(error))
+        if error:
+            raise ApiException(Tox_Err_Options_New(error))
         return ptr
 
     def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None:
@@ -354,7 +357,8 @@ cdef class Tox_Ptr:
     cdef Tox* _new(self, Tox_Options_Ptr options):
         cdef Tox_Err_New error = TOX_ERR_NEW_OK
         cdef Tox* ptr = tox_new(options._get() if options else NULL, &error)
-        if error: raise ApiException(Tox_Err_New(error))
+        if error:
+            raise ApiException(Tox_Err_New(error))
         return ptr
 
     def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None:
@@ -425,9 +429,9 @@ cdef class Tox_Ptr:
     def handle_group_join_fail(self, group_number: Tox_Group_Number, fail_type: Tox_Group_Join_Fail) -> None: pass
     def handle_group_moderation(self, group_number: Tox_Group_Number, source_peer_id: Tox_Group_Peer_Number, target_peer_id: Tox_Group_Peer_Number, mod_type: Tox_Group_Mod_Event) -> None: pass
 
-    ############################################################
-    ########################## Manual ##########################
-    ############################################################
+    #
+    # Manual
+    #
 
     def __init__(self, options: Optional[Tox_Options_Ptr] = None):
         """Create new Tox object."""
@@ -500,7 +504,8 @@ cdef class Tox_Ptr:
     def name(self, name: bytes) -> None:
         cdef Tox_Err_Set_Info err = TOX_ERR_SET_INFO_OK
         tox_self_set_name(self._get(), name, len(name), &err)
-        if err: raise ApiException(Tox_Err_Set_Info(err))
+        if err:
+            raise ApiException(Tox_Err_Set_Info(err))
 
     @property
     def status_message(self) -> bytes:
@@ -516,24 +521,28 @@ cdef class Tox_Ptr:
     def status_message(self, status_message: bytes) -> None:
         cdef Tox_Err_Set_Info err = TOX_ERR_SET_INFO_OK
         tox_self_set_status_message(self._get(), status_message, len(status_message), &err)
-        if err: raise ApiException(Tox_Err_Set_Info(err))
+        if err:
+            raise ApiException(Tox_Err_Set_Info(err))
 
     def friend_add(self, address: bytes, message: bytes):
         common.check_len("address", address, tox_address_size())
         cdef Tox_Err_Friend_Add err = TOX_ERR_FRIEND_ADD_OK
         tox_friend_add(self._get(), address, message, len(message), &err)
-        if err: raise ApiException(Tox_Err_Friend_Add(err))
+        if err:
+            raise ApiException(Tox_Err_Friend_Add(err))
 
     def friend_add_norequest(self, public_key: bytes):
         common.check_len("public_key", public_key, tox_public_key_size())
         cdef Tox_Err_Friend_Add err = TOX_ERR_FRIEND_ADD_OK
         tox_friend_add_norequest(self._get(), public_key, &err)
-        if err: raise ApiException(Tox_Err_Friend_Add(err))
+        if err:
+            raise ApiException(Tox_Err_Friend_Add(err))
 
     def friend_delete(self, friend_number: int):
         cdef Tox_Err_Friend_Delete err = TOX_ERR_FRIEND_DELETE_OK
         tox_friend_delete(self._get(), friend_number, &err)
-        if err: raise ApiException(Tox_Err_Friend_Delete(err))
+        if err:
+            raise ApiException(Tox_Err_Friend_Delete(err))
 
 
 VERSION: str = "%d.%d.%d" % (tox_version_major(), tox_version_minor(), tox_version_patch())
