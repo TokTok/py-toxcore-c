@@ -15,12 +15,15 @@ PACKAGES = [
 ]
 
 
-def process_class(name: str, cls: list[str], imports: set[str],
-                  typevars: set[str], attr: object) -> None:
+def process_class(
+    name: str, cls: list[str], imports: set[str], typevars: set[str], attr: object
+) -> None:
     for mem in dir(attr):
         mem_attr = getattr(attr, mem)
-        if (mem in ("__init__", "__enter__", "__exit__")
-                or "cython_function_or_method" in mem_attr.__class__.__name__):
+        if (
+            mem in ("__init__", "__enter__", "__exit__")
+            or "cython_function_or_method" in mem_attr.__class__.__name__
+        ):
             doc = mem_attr.__doc__.split("\n")[0]
             if " -> " not in doc:
                 doc += " -> None"
@@ -48,8 +51,13 @@ def process_class(name: str, cls: list[str], imports: set[str],
                 raise Exception((mem, mem_attr.__doc__, mem_attr.__class__))
 
 
-def process_type(sym: str, attr: object, imports: set[str],
-                 typevars: set[str], classes: dict[str, list[str]]) -> None:
+def process_type(
+    sym: str,
+    attr: object,
+    imports: set[str],
+    typevars: set[str],
+    classes: dict[str, list[str]],
+) -> None:
     if not isinstance(attr, type):
         return
 
@@ -73,8 +81,9 @@ def process_type(sym: str, attr: object, imports: set[str],
         process_class(sym, cls, imports, typevars, attr)
 
 
-def process_value(sym: str, attr: object, consts: list[str],
-                  classes: dict[str, list[str]]) -> None:
+def process_value(
+    sym: str, attr: object, consts: list[str], classes: dict[str, list[str]]
+) -> None:
     if isinstance(attr, int):
         enum = tuple(c for c in classes.keys() if sym.startswith(c.upper()))
         if enum:
@@ -97,14 +106,12 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
             continue
         if isinstance(attr, pytox.common.__class__):
             continue
-        if hasattr(attr,
-                   "__module__") and f"{prefix}.{attr.__module__}" != name:
+        if hasattr(attr, "__module__") and f"{prefix}.{attr.__module__}" != name:
             continue
         attrs.append((sym, attr))
 
     consts: list[str] = []
-    classes: collections.OrderedDict[str, list[str]] = collections.OrderedDict(
-    )
+    classes: collections.OrderedDict[str, list[str]] = collections.OrderedDict()
     imports: set[str] = set()
     typevars: set[str] = set()
     missing: set[str] = {
@@ -124,8 +131,7 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
     for sym, attr in attrs:
         process_value(sym, attr, consts, classes)
 
-    with open(os.path.join(out_dir, f"{name.replace('.', '/')}.pyi"),
-              "w") as pyi:
+    with open(os.path.join(out_dir, f"{name.replace('.', '/')}.pyi"), "w") as pyi:
         pyi.write(f"# {name}\n")
         for s in sorted(imports):
             pyi.write(s + "\n")
