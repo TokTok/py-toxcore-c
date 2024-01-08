@@ -1,8 +1,8 @@
 import unittest
+from typing import cast
 
 import pytox.toxcore.tox as c
 from pytox import common
-from typing import cast
 
 
 class ToxTest(unittest.TestCase):
