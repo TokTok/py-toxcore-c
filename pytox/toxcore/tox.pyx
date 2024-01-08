@@ -1,6 +1,7 @@
 # cython: language_level=3, linetrace=True
 from array import array
 from pytox import common
+from typing import Optional
 
 class ApiException(common.ApiException): pass
 
@@ -331,6 +332,7 @@ cdef class Tox_Options_Ptr:
         self._ptr = NULL
 
     def __init__(self):
+        """Create new Tox_Options object."""
         self._ptr = self._new()
 
 
@@ -420,13 +422,14 @@ cdef class Tox_Ptr:
     def handle_group_join_fail(self, group_number: Tox_Group_Number, fail_type: Tox_Group_Join_Fail) -> None: pass
     def handle_group_moderation(self, group_number: Tox_Group_Number, source_peer_id: Tox_Group_Peer_Number, target_peer_id: Tox_Group_Peer_Number, mod_type: Tox_Group_Mod_Event) -> None: pass
 
-    def __init__(self, Tox_Options_Ptr options):
-        self._ptr = self._new(options)
-        install_handlers(self, self._ptr)
-
     ############################################################
     ########################## Manual ##########################
     ############################################################
+
+    def __init__(self, options: Optional[Tox_Options_Ptr] = None):
+        """Create new Tox object."""
+        self._ptr = self._new(options)
+        install_handlers(self, self._ptr)
 
     @property
     def savedata(self) -> bytes:
@@ -439,7 +442,7 @@ cdef class Tox_Ptr:
             free(data)
 
     def bootstrap(self, host: str, port: int, public_key: bytes) -> bool:
-        common._check_len("public_key", public_key, tox_public_key_size())
+        common.check_len("public_key", public_key, tox_public_key_size())
         cdef Tox_Err_Bootstrap err = TOX_ERR_BOOTSTRAP_OK
         return tox_bootstrap(self._get(), host.encode("utf-8"), port, public_key, &err)
 
@@ -513,13 +516,13 @@ cdef class Tox_Ptr:
         if err: raise ApiException(Tox_Err_Set_Info(err))
 
     def friend_add(self, address: bytes, message: bytes):
-        common._check_len("address", address, tox_address_size())
+        common.check_len("address", address, tox_address_size())
         cdef Tox_Err_Friend_Add err = TOX_ERR_FRIEND_ADD_OK
         tox_friend_add(self._get(), address, message, len(message), &err)
         if err: raise ApiException(Tox_Err_Friend_Add(err))
 
     def friend_add_norequest(self, public_key: bytes):
-        common._check_len("public_key", public_key, tox_public_key_size())
+        common.check_len("public_key", public_key, tox_public_key_size())
         cdef Tox_Err_Friend_Add err = TOX_ERR_FRIEND_ADD_OK
         tox_friend_add_norequest(self._get(), public_key, &err)
         if err: raise ApiException(Tox_Err_Friend_Add(err))

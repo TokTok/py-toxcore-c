@@ -3,17 +3,6 @@ load("//tools/project:build_defs.bzl", "project")
 
 project(license = "gpl3-https")
 
-#genrule(
-#    name = "pytox/core",
-#    srcs = [
-#        "pytox/src/core.pyx",
-#        "//c-toxcore:tox/tox.h",
-#    ],
-#    outs = ["pytox/core.pyx"],
-#    cmd = "$(location //py_toxcore_c/tools:gen_api) $(location pytox/src/core.pyx) $(location //c-toxcore:tox/tox.h) > $@",
-#    tools = ["//py_toxcore_c/tools:gen_api"],
-#)
-
 pyx_library(
     name = "pytox",
     srcs = glob(
@@ -33,12 +22,4 @@ pyx_library(
     },
     tags = ["no-cross"],
     visibility = ["//visibility:public"],
-)
-
-genrule(
-    name = "pytox_stubs",
-    outs = [mod[:-4] + ".pyi" for mod in glob(["pytox/**/*.pyx"])],
-    cmd = "$(location //py_toxcore_c/tools:stubgen) -o $(GENDIR)/py_toxcore_c" + " ".join([" -m %s" % mod[:-4].replace("/", ".") for mod in glob(["pytox/**/*.pyx"])]),
-    tags = ["manual"],
-    tools = ["//py_toxcore_c/tools:stubgen"],
 )

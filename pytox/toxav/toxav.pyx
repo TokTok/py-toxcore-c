@@ -69,5 +69,6 @@ cdef class Toxav_Ptr:
     def handle_video_receive_frame(self, friend_number: int, width: int, height: int, y: bytes, u: bytes, v: bytes, ystride: int, ustride: int, vstride: int) -> None: pass
 
     def __init__(self, tox.Tox_Ptr tox):
+        """Create new Toxav object."""
         self._ptr = self._new(tox)
         install_handlers(self, self._ptr)
