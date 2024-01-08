@@ -20,7 +20,7 @@ def process_class(name: str, cls: list[str], imports: set[str],
     for mem in dir(attr):
         mem_attr = getattr(attr, mem)
         if (mem in ("__init__", "__enter__", "__exit__")
-              or "cython_function_or_method" in mem_attr.__class__.__name__):
+                or "cython_function_or_method" in mem_attr.__class__.__name__):
             doc = mem_attr.__doc__.split("\n")[0]
             if " -> " not in doc:
                 doc += " -> None"
