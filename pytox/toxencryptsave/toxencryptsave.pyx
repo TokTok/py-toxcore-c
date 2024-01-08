@@ -1,6 +1,10 @@
 # cython: language_level=3, linetrace=True
 from array import array
 from pytox import common
+from types import TracebackType
+from typing import TypeVar
+
+T = TypeVar("T")
 
 class ApiException(common.ApiException): pass
 
@@ -11,13 +15,13 @@ cdef class Tox_Pass_Key_Ptr:
             raise common.UseAfterFreeException()
         return self._ptr
 
-    def __dealloc__(self):
+    def __dealloc__(self) -> None:
         self.__exit__(None, None, None)
 
-    def __enter__(self):
+    def __enter__(self: T) -> T:
         return self
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+    def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, exc_traceback: TracebackType | None) -> None:
         tox_pass_key_free(self._ptr)
         self._ptr = NULL
 
@@ -29,7 +33,7 @@ cdef class Tox_Pass_Key_Ptr:
 
     cdef Tox_Pass_Key* _derive_with_salt(self, bytes passphrase, bytes salt):
         cdef Tox_Err_Key_Derivation error = TOX_ERR_KEY_DERIVATION_OK
-        cdef Tox_Pass_Key* ptr = tox_pass_key_derive_with_salt(passphrase, len(passphrase), common._check_len("salt", salt, tox_pass_salt_length()), &error)
+        cdef Tox_Pass_Key* ptr = tox_pass_key_derive_with_salt(passphrase, len(passphrase), common.check_len("salt", salt, tox_pass_salt_length()), &error)
         if error: raise ApiException(Tox_Err_Key_Derivation(error))
         return ptr
 
@@ -37,7 +41,8 @@ cdef class Tox_Pass_Key_Ptr:
     ########################## Manual ##########################
     ############################################################
 
-    def __init__(self, passphrase: bytes, salt: bytes = None):
+    def __init__(self, passphrase: bytes, salt: Optional[bytes] = None):
+        """Create new Tox_Pass_Key object."""
         if salt:
             self._ptr = self._derive_with_salt(passphrase, salt)
         else:

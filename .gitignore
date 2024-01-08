@@ -10,3 +10,4 @@
 .mypy_cache
 # TODO(iphydf): Remove once .gen is removed from the name.
 *.gen.pyx
+__pycache__

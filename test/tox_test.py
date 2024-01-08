@@ -40,11 +40,11 @@ class ToxTest(unittest.TestCase):
             self.assertNotEqual(tox.public_key, tox.secret_key)
 
     def test_savedata_contains_secret_key(self) -> None:
-        with c.Tox_Ptr(None) as tox:
+        with c.Tox_Ptr() as tox:
             self.assertIn(tox.secret_key, tox.savedata)
 
     def test_set_name(self) -> None:
-        with c.Tox_Ptr(None) as tox:
+        with c.Tox_Ptr() as tox:
             self.assertEqual(tox.name, b"")
             tox.name = b"iphy"
             self.assertEqual(tox.name, b"iphy")
@@ -54,7 +54,7 @@ class ToxTest(unittest.TestCase):
                 tox.name = b"x" * (c.MAX_NAME_LENGTH + 1)
 
     def test_set_status_message(self) -> None:
-        with c.Tox_Ptr(None) as tox:
+        with c.Tox_Ptr() as tox:
             self.assertEqual(tox.status_message, b"")
             tox.status_message = b"pytox is cool now"
             self.assertEqual(tox.status_message, b"pytox is cool now")
@@ -64,7 +64,7 @@ class ToxTest(unittest.TestCase):
                 tox.status_message = b"x" * (c.MAX_STATUS_MESSAGE_LENGTH + 1)
 
     def test_set_status(self) -> None:
-        with c.Tox_Ptr(None) as tox:
+        with c.Tox_Ptr() as tox:
             self.assertEqual(tox.status, c.TOX_USER_STATUS_NONE)
             tox.status = c.TOX_USER_STATUS_AWAY
             self.assertEqual(tox.status, c.TOX_USER_STATUS_AWAY)
@@ -72,16 +72,16 @@ class ToxTest(unittest.TestCase):
             self.assertEqual(tox.status, c.TOX_USER_STATUS_AWAY)
 
     def test_friend_add(self) -> None:
-        with c.Tox_Ptr(None) as tox1:
-            with c.Tox_Ptr(None) as tox2:
+        with c.Tox_Ptr() as tox1:
+            with c.Tox_Ptr() as tox2:
                 tox1.friend_add(tox2.address, b"hello there!")
                 tox2.friend_add_norequest(tox1.public_key)
                 with self.assertRaises(common.LengthException):
                     tox2.friend_add(tox1.public_key, b"oh no!")
 
     def test_friend_delete(self) -> None:
-        with c.Tox_Ptr(None) as tox1:
-            with c.Tox_Ptr(None) as tox2:
+        with c.Tox_Ptr() as tox1:
+            with c.Tox_Ptr() as tox2:
                 tox1.friend_add(tox2.address, b"hello there!")
                 tox1.friend_delete(0)
                 with self.assertRaises(c.ApiException):
