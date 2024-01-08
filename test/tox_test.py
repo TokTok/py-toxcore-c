@@ -2,6 +2,7 @@ import unittest
 
 import pytox.toxcore.tox as c
 from pytox import common
+from typing import cast
 
 
 class ToxTest(unittest.TestCase):
@@ -16,10 +17,19 @@ class ToxTest(unittest.TestCase):
 
     def test_use_after_free(self) -> None:
         opts = c.Tox_Options_Ptr()
+        with c.Tox_Ptr(opts) as tox:
+            saved_tox = tox
         with self.assertRaises(common.UseAfterFreeException):
-            with c.Tox_Ptr(opts) as tox:
-                saved_tox = tox
             print(saved_tox.address)
+
+    def test_pass_invalid_type(self) -> None:
+        with self.assertRaises(TypeError):
+            with c.Tox_Ptr(cast(c.Tox_Options_Ptr, "hello")) as tox:
+                pass
+
+    def test_pass_none(self) -> None:
+        with c.Tox_Ptr(None) as tox:
+            pass
 
     def test_address(self) -> None:
         opts = c.Tox_Options_Ptr()

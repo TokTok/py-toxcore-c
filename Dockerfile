@@ -18,7 +18,7 @@ RUN apt-get update \
  python3-pip \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
- && pip3 install cython mypy
+ && pip3 install --no-cache-dir cython cython-lint mypy
 
 WORKDIR /build
 RUN git clone --depth=1 --recursive https://github.com/TokTok/c-toxcore /build/c-toxcore \
@@ -31,6 +31,7 @@ RUN git clone --depth=1 --recursive https://github.com/TokTok/c-toxcore /build/c
 
 COPY pytox /build/pytox
 
+RUN cython-lint --max-line-length 300 $(find pytox -name "*.pyx" -or -name "*.pxd")
 RUN cython -I. $(find pytox -name "*.pyx")
 
 COPY setup.py /build/

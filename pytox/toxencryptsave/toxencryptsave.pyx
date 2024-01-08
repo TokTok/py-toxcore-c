@@ -1,12 +1,13 @@
 # cython: language_level=3, linetrace=True
-from array import array
 from pytox import common
 from types import TracebackType
 from typing import TypeVar
 
 T = TypeVar("T")
 
-class ApiException(common.ApiException): pass
+
+class ApiException(common.ApiException):
+    pass
 
 
 cdef class Tox_Pass_Key_Ptr:
@@ -28,18 +29,20 @@ cdef class Tox_Pass_Key_Ptr:
     cdef Tox_Pass_Key* _derive(self, bytes passphrase):
         cdef Tox_Err_Key_Derivation error = TOX_ERR_KEY_DERIVATION_OK
         cdef Tox_Pass_Key* ptr = tox_pass_key_derive(passphrase, len(passphrase), &error)
-        if error: raise ApiException(Tox_Err_Key_Derivation(error))
+        if error:
+            raise ApiException(Tox_Err_Key_Derivation(error))
         return ptr
 
     cdef Tox_Pass_Key* _derive_with_salt(self, bytes passphrase, bytes salt):
         cdef Tox_Err_Key_Derivation error = TOX_ERR_KEY_DERIVATION_OK
         cdef Tox_Pass_Key* ptr = tox_pass_key_derive_with_salt(passphrase, len(passphrase), common.check_len("salt", salt, tox_pass_salt_length()), &error)
-        if error: raise ApiException(Tox_Err_Key_Derivation(error))
+        if error:
+            raise ApiException(Tox_Err_Key_Derivation(error))
         return ptr
 
-    ############################################################
-    ########################## Manual ##########################
-    ############################################################
+    #
+    # Manual
+    #
 
     def __init__(self, passphrase: bytes, salt: Optional[bytes] = None):
         """Create new Tox_Pass_Key object."""
@@ -54,7 +57,8 @@ cdef class Tox_Pass_Key_Ptr:
         cdef uint8_t *ciphertext = <uint8_t*> malloc(size * sizeof(uint8_t))
         try:
             tox_pass_key_encrypt(self._get(), plaintext, len(plaintext), ciphertext, &err)
-            if err: raise ApiException(Tox_Err_Encryption(err))
+            if err:
+                raise ApiException(Tox_Err_Encryption(err))
             return ciphertext[:size]
         finally:
             free(ciphertext)
@@ -65,7 +69,8 @@ cdef class Tox_Pass_Key_Ptr:
         cdef uint8_t *plaintext = <uint8_t*> malloc(size * sizeof(uint8_t))
         try:
             tox_pass_key_decrypt(self._get(), ciphertext, len(ciphertext), plaintext, &err)
-            if err: raise ApiException(Tox_Err_Decryption(err))
+            if err:
+                raise ApiException(Tox_Err_Decryption(err))
             return plaintext[:size]
         finally:
             free(plaintext)
