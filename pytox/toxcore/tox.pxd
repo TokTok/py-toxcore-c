@@ -263,9 +263,9 @@ cdef extern from "tox/tox.h":
         TOX_ERR_GROUP_LEAVE_GROUP_NOT_FOUND
         TOX_ERR_GROUP_LEAVE_TOO_LONG
         TOX_ERR_GROUP_LEAVE_FAIL_SEND
-    cpdef enum Tox_Err_Group_State_Queries:
-        TOX_ERR_GROUP_STATE_QUERIES_OK
-        TOX_ERR_GROUP_STATE_QUERIES_GROUP_NOT_FOUND
+    cpdef enum Tox_Err_Group_State_Query:
+        TOX_ERR_GROUP_STATE_QUERY_OK
+        TOX_ERR_GROUP_STATE_QUERY_GROUP_NOT_FOUND
     cpdef enum Tox_Err_Group_Topic_Set:
         TOX_ERR_GROUP_TOPIC_SET_OK
         TOX_ERR_GROUP_TOPIC_SET_GROUP_NOT_FOUND
@@ -300,6 +300,7 @@ cdef extern from "tox/tox.h":
         TOX_ERR_GROUP_SEND_CUSTOM_PACKET_EMPTY
         TOX_ERR_GROUP_SEND_CUSTOM_PACKET_PERMISSIONS
         TOX_ERR_GROUP_SEND_CUSTOM_PACKET_DISCONNECTED
+        TOX_ERR_GROUP_SEND_CUSTOM_PACKET_FAIL_SEND
     cpdef enum Tox_Err_Group_Send_Custom_Private_Packet:
         TOX_ERR_GROUP_SEND_CUSTOM_PRIVATE_PACKET_OK
         TOX_ERR_GROUP_SEND_CUSTOM_PRIVATE_PACKET_GROUP_NOT_FOUND
@@ -405,6 +406,7 @@ cdef extern from "tox/tox.h":
     ctypedef uint32_t Tox_Friend_Message_Id
     ctypedef uint32_t Tox_File_Number
     ctypedef uint32_t Tox_Conference_Peer_Number
+    ctypedef uint32_t Tox_Conference_Offline_Peer_Number
     ctypedef uint32_t Tox_Conference_Number
     ctypedef uint32_t Tox_Group_Peer_Number
     ctypedef uint32_t Tox_Group_Number
@@ -476,6 +478,8 @@ cdef extern from "tox/tox.h":
     cdef void tox_options_set_savedata_data(Tox_Options* self, const uint8_t* savedata_data, size_t length)
     cdef bool tox_options_get_experimental_thread_safety(const Tox_Options* self)
     cdef void tox_options_set_experimental_thread_safety(Tox_Options* self, bool experimental_thread_safety)
+    cdef bool tox_options_get_experimental_groups_persistence(const Tox_Options* self)
+    cdef void tox_options_set_experimental_groups_persistence(Tox_Options* self, bool experimental_groups_persistence)
     cdef void tox_options_default(Tox_Options* self)
     cdef Tox_Options* tox_options_new(Tox_Err_Options_New* error)
     cdef void tox_options_free(Tox_Options* tox_options)
@@ -560,11 +564,11 @@ cdef extern from "tox/tox.h":
     cdef bool tox_conference_peer_get_public_key(const Tox* self, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number, uint8_t* public_key, Tox_Err_Conference_Peer_Query* error)
     cdef void tox_callback_conference_peer_name(Tox* self, tox_conference_peer_name_cb* callback)
     cdef void tox_callback_conference_peer_list_changed(Tox* self, tox_conference_peer_list_changed_cb* callback)
-    cdef Tox_Conference_Peer_Number tox_conference_peer_count(const Tox* self, Tox_Conference_Number conference_number, Tox_Err_Conference_Peer_Query* error)
+    cdef uint32_t tox_conference_peer_count(const Tox* self, Tox_Conference_Number conference_number, Tox_Err_Conference_Peer_Query* error)
     cdef bool tox_conference_peer_number_is_ours(const Tox* self, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number, Tox_Err_Conference_Peer_Query* error)
-    cdef bool tox_conference_offline_peer_get_name(const Tox* self, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number offline_peer_number, uint8_t* name, Tox_Err_Conference_Peer_Query* error)
-    cdef size_t tox_conference_offline_peer_get_name_size(const Tox* self, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number offline_peer_number, Tox_Err_Conference_Peer_Query* error)
-    cdef bool tox_conference_offline_peer_get_public_key(const Tox* self, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number offline_peer_number, uint8_t* public_key, Tox_Err_Conference_Peer_Query* error)
+    cdef bool tox_conference_offline_peer_get_name(const Tox* self, Tox_Conference_Number conference_number, Tox_Conference_Offline_Peer_Number offline_peer_number, uint8_t* name, Tox_Err_Conference_Peer_Query* error)
+    cdef size_t tox_conference_offline_peer_get_name_size(const Tox* self, Tox_Conference_Number conference_number, Tox_Conference_Offline_Peer_Number offline_peer_number, Tox_Err_Conference_Peer_Query* error)
+    cdef bool tox_conference_offline_peer_get_public_key(const Tox* self, Tox_Conference_Number conference_number, Tox_Conference_Offline_Peer_Number offline_peer_number, uint8_t* public_key, Tox_Err_Conference_Peer_Query* error)
     cdef uint32_t tox_conference_offline_peer_count(const Tox* self, Tox_Conference_Number conference_number, Tox_Err_Conference_Peer_Query* error)
     cdef bool tox_conference_get_title(const Tox* self, Tox_Conference_Number conference_number, uint8_t* title, Tox_Err_Conference_Title* error)
     cdef bool tox_conference_set_title(Tox* self, Tox_Conference_Number conference_number, const uint8_t* title, size_t length, Tox_Err_Conference_Title* error)
@@ -600,15 +604,15 @@ cdef extern from "tox/tox.h":
     cdef void tox_callback_group_peer_limit(Tox* self, tox_group_peer_limit_cb* callback)
     cdef void tox_callback_group_peer_join(Tox* self, tox_group_peer_join_cb* callback)
     cdef void tox_callback_group_peer_exit(Tox* self, tox_group_peer_exit_cb* callback)
-    cdef bool tox_group_get_topic(const Tox* self, Tox_Group_Number group_number, uint8_t* topic, Tox_Err_Group_State_Queries* error)
+    cdef bool tox_group_get_topic(const Tox* self, Tox_Group_Number group_number, uint8_t* topic, Tox_Err_Group_State_Query* error)
     cdef bool tox_group_set_topic(Tox* self, Tox_Group_Number group_number, const uint8_t* topic, size_t length, Tox_Err_Group_Topic_Set* error)
-    cdef size_t tox_group_get_topic_size(const Tox* self, Tox_Group_Number group_number, Tox_Err_Group_State_Queries* error)
-    cdef bool tox_group_get_name(const Tox* self, Tox_Group_Number group_number, uint8_t* name, Tox_Err_Group_State_Queries* error)
-    cdef size_t tox_group_get_name_size(const Tox* self, Tox_Group_Number group_number, Tox_Err_Group_State_Queries* error)
-    cdef bool tox_group_get_chat_id(const Tox* self, Tox_Group_Number group_number, uint8_t* chat_id, Tox_Err_Group_State_Queries* error)
+    cdef size_t tox_group_get_topic_size(const Tox* self, Tox_Group_Number group_number, Tox_Err_Group_State_Query* error)
+    cdef bool tox_group_get_name(const Tox* self, Tox_Group_Number group_number, uint8_t* name, Tox_Err_Group_State_Query* error)
+    cdef size_t tox_group_get_name_size(const Tox* self, Tox_Group_Number group_number, Tox_Err_Group_State_Query* error)
+    cdef bool tox_group_get_chat_id(const Tox* self, Tox_Group_Number group_number, uint8_t* chat_id, Tox_Err_Group_State_Query* error)
     cdef uint32_t tox_group_get_number_groups(const Tox* self)
-    cdef bool tox_group_get_password(const Tox* self, Tox_Group_Number group_number, uint8_t* password, Tox_Err_Group_State_Queries* error)
-    cdef size_t tox_group_get_password_size(const Tox* self, Tox_Group_Number group_number, Tox_Err_Group_State_Queries* error)
+    cdef bool tox_group_get_password(const Tox* self, Tox_Group_Number group_number, uint8_t* password, Tox_Err_Group_State_Query* error)
+    cdef size_t tox_group_get_password_size(const Tox* self, Tox_Group_Number group_number, Tox_Err_Group_State_Query* error)
     cdef uint32_t tox_group_max_topic_length()
     cdef uint32_t tox_group_max_part_length()
     cdef uint32_t tox_group_max_message_length()
