@@ -1,8 +1,7 @@
 import collections
 import time
 import unittest
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import dataclass, field
 
 import pytox.toxcore.tox as core
 
