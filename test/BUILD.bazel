@@ -1,4 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_test")
+load("//third_party/python:build_defs.bzl", "mypy_test")
+
+TESTS = glob(["**/*.py"])
 
 [py_test(
     name = src[:-3],
@@ -6,4 +9,12 @@ load("@rules_python//python:defs.bzl", "py_test")
     srcs = [src],
     tags = ["no-cross"],
     deps = ["//py_toxcore_c:pytox"],
-) for src in glob(["**/*.py"])]
+) for src in TESTS]
+
+mypy_test(
+    name = "mypy_test",
+    srcs = TESTS,
+    path = ["py_toxcore_c"],
+    tags = ["no-cross"],
+    deps = ["//py_toxcore_c:pytox"],
+)
