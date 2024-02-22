@@ -1,6 +1,6 @@
 # cython: language_level=3, linetrace=True
 from libcpp cimport bool
-from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int16_t, int32_t
+from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int16_t, int32_t, int64_t
 from libc.stdlib cimport malloc, free
 
 cimport pytox.toxcore.tox as tox
@@ -78,11 +78,13 @@ cdef extern from "tox/toxav.h":
     cdef bool toxav_answer(Toxav* self, uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_rate, Toxav_Err_Answer* error)
     cdef void toxav_callback_call_state(Toxav* self, toxav_call_state_cb* callback, void* user_data)
     cdef bool toxav_call_control(Toxav* self, uint32_t friend_number, Toxav_Call_Control control, Toxav_Err_Call_Control* error)
+    cdef bool toxav_audio_set_bit_rate(Toxav* self, uint32_t friend_number, uint32_t bit_rate, Toxav_Err_Bit_Rate_Set* error)
     cdef uint32_t toxav_audio_iteration_interval(const Toxav* self)
     cdef void toxav_audio_iterate(Toxav* self)
     cdef bool toxav_audio_send_frame(Toxav* self, uint32_t friend_number, const int16_t* pcm, size_t sample_count, uint8_t channels, uint32_t sampling_rate, Toxav_Err_Send_Frame* error)
     cdef void toxav_callback_audio_bit_rate(Toxav* self, toxav_audio_bit_rate_cb* callback, void* user_data)
     cdef void toxav_callback_audio_receive_frame(Toxav* self, toxav_audio_receive_frame_cb* callback, void* user_data)
+    cdef bool toxav_video_set_bit_rate(Toxav* self, uint32_t friend_number, uint32_t bit_rate, Toxav_Err_Bit_Rate_Set* error)
     cdef uint32_t toxav_video_iteration_interval(const Toxav* self)
     cdef void toxav_video_iterate(Toxav* self)
     cdef bool toxav_video_send_frame(Toxav* self, uint32_t friend_number, uint16_t width, uint16_t height, const uint8_t* y, const uint8_t* u, const uint8_t* v, Toxav_Err_Send_Frame* error)

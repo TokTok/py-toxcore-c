@@ -1,6 +1,6 @@
 # cython: language_level=3, linetrace=True
 from libcpp cimport bool
-from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int16_t, int32_t
+from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int16_t, int32_t, int64_t
 from libc.stdlib cimport malloc, free
 
 cdef extern from "tox/toxencryptsave.h":

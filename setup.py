@@ -10,7 +10,7 @@ cflags = [
 
 setup(
     name="py-toxcore-c",
-    version="0.3.0",
+    version="0.2.19",
     description="Python binding for Tox the skype replacement",
     author="Iphigenia Df",
     author_email="iphydf@gmail.com",
