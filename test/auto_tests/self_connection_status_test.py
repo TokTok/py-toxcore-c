@@ -16,7 +16,8 @@ class TestException(Exception):
 class FriendInfo:
     connection_status: core.Tox_Connection = core.TOX_CONNECTION_NONE
     request_message: bytes = b""
-    messages: list[tuple[core.Tox_Message_Type, bytes]] = field(default_factory=list)
+    messages: list[tuple[core.Tox_Message_Type, bytes]
+                   ] = field(default_factory=list)
 
 
 class TestTox(core.Tox_Ptr):
@@ -52,6 +53,7 @@ class TestTox(core.Tox_Ptr):
                               type_: core.Tox_Message_Type,
                               message: bytes) -> None:
         self.friends[friend_number].messages.append((type_, message))
+
 
 class AutoTest(unittest.TestCase):
 
@@ -94,29 +96,37 @@ class AutoTest(unittest.TestCase):
             self.assertEqual(ex.exception.status, tox.connection_status)
 
     def test_friend_add(self) -> None:
-        self.tox1.friend_add(self.tox2.address, b"are you gonna be my best friend?")
-        self.tox2.friend_add(self.tox3.address, b"lala lala lala la I'm Mr. Happy Face")
+        self.tox1.friend_add(
+            self.tox2.address, b"are you gonna be my best friend?")
+        self.tox2.friend_add(
+            self.tox3.address, b"lala lala lala la I'm Mr. Happy Face")
         self._wait_for_friend_online()
         self.assertEqual(
-                self.tox2.friends[self.tox2.friend_by_public_key(self.tox1.public_key)].request_message,
-                b"are you gonna be my best friend?")
+            self.tox2.friends[self.tox2.friend_by_public_key(
+                self.tox1.public_key)].request_message,
+            b"are you gonna be my best friend?")
         self.assertEqual(
-                self.tox3.friends[self.tox3.friend_by_public_key(self.tox2.public_key)].request_message,
-                b"lala lala lala la I'm Mr. Happy Face")
+            self.tox3.friends[self.tox3.friend_by_public_key(
+                self.tox2.public_key)].request_message,
+            b"lala lala lala la I'm Mr. Happy Face")
 
     def test_friend_by_public_key(self) -> None:
         with self.assertRaises(core.ApiException) as ex:
             # We're not our own friend.
             self.tox1.friend_by_public_key(self.tox1.public_key)
-        self.assertEqual(ex.exception.error, core.TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND)
+        self.assertEqual(ex.exception.error,
+                         core.TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND)
 
     def test_send_message(self) -> None:
         self._wait_for_friend_online()
-        self.tox1.friend_send_message(0, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!")
-        friend = self.tox2.friends[self.tox2.friend_by_public_key(self.tox1.public_key)]
+        self.tox1.friend_send_message(
+            0, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!")
+        friend = self.tox2.friends[self.tox2.friend_by_public_key(
+            self.tox1.public_key)]
         while not friend.messages:
             self._iterate()
-        self.assertEqual(friend.messages[0], (core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!"))
+        self.assertEqual(
+            friend.messages[0], (core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!"))
 
 
 if __name__ == "__main__":
