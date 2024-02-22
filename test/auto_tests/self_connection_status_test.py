@@ -85,19 +85,19 @@ class AutoTest(unittest.TestCase):
     def _wait_for_self_online(self) -> None:
         # At most 20 seconds.
         self._iterate(1000, lambda: self.tox1.connection_status == core.TOX_CONNECTION_NONE
-           or self.tox2.connection_status == core.TOX_CONNECTION_NONE
-           or self.tox3.connection_status == core.TOX_CONNECTION_NONE)
+                      or self.tox2.connection_status == core.TOX_CONNECTION_NONE
+                      or self.tox3.connection_status == core.TOX_CONNECTION_NONE)
 
     def _wait_for_friend_online(self) -> None:
         # At most 5 seconds.
         self._iterate(250, lambda: self.tox1.friends[0].connection_status ==
-           core.TOX_CONNECTION_NONE
-           or self.tox2.friends[0].connection_status ==
-           core.TOX_CONNECTION_NONE
-           or self.tox2.friends[1].connection_status ==
-           core.TOX_CONNECTION_NONE
-           or self.tox3.friends[0].connection_status ==
-           core.TOX_CONNECTION_NONE)
+                      core.TOX_CONNECTION_NONE
+                      or self.tox2.friends[0].connection_status ==
+                      core.TOX_CONNECTION_NONE
+                      or self.tox2.friends[1].connection_status ==
+                      core.TOX_CONNECTION_NONE
+                      or self.tox3.friends[0].connection_status ==
+                      core.TOX_CONNECTION_NONE)
 
     def test_connection_status_cb(self) -> None:
         for tox in (self.tox1, self.tox2, self.tox3):
