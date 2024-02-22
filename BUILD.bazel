@@ -1,4 +1,4 @@
-load("//third_party/python:build_defs.bzl", "pyx_library")
+load("//third_party/python:build_defs.bzl", "mypy_test", "pyx_library")
 load("//tools/project:build_defs.bzl", "project")
 
 project(license = "gpl3-https")
@@ -10,12 +10,12 @@ pyx_library(
             "pytox/**/*.pxd",
             "pytox/**/*.pyx",
             "pytox/**/*.py",
+            "pytox/**/*.pyi",
         ],
         # TODO(iphydf): Remove.
         exclude = ["**/*.gen.pyx"],
     ),
     cdeps = ["//c-toxcore"],
-    copts = ["-Wno-missing-variable-declarations"],
     cython_directives = {
         "embedsignature": "True",
         "embedsignature.format": "python",
@@ -23,4 +23,10 @@ pyx_library(
     },
     tags = ["no-cross"],
     visibility = ["//visibility:public"],
+)
+
+mypy_test(
+    name = "mypy_test",
+    srcs = glob(["**/*.py"]),
+    path = ["py_toxcore_c"],
 )
