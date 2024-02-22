@@ -94,9 +94,9 @@ class AutoTest(unittest.TestCase):
     def _wait_for_friend_online(self) -> None:
         def is_online() -> bool:
             return (self.tox1.friends[0].connection_status == core.
-            TOX_CONNECTION_NONE or self.tox2.friends[0].connection_status ==
-            core.TOX_CONNECTION_NONE or self.tox2.friends[1].connection_status
-            == core.TOX_CONNECTION_NONE or self.tox3.friends[
+                    TOX_CONNECTION_NONE or self.tox2.friends[0].connection_status ==
+                    core.TOX_CONNECTION_NONE or self.tox2.friends[1].connection_status
+                    == core.TOX_CONNECTION_NONE or self.tox3.friends[
                 0].connection_status == core.TOX_CONNECTION_NONE)
         # At most 5 seconds.
         self._iterate(250, is_online)
