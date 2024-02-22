@@ -1,11 +1,18 @@
 load("@rules_python//python:defs.bzl", "py_binary")
+load("//third_party/python:build_defs.bzl", "mypy_test")
 
 py_binary(
     name = "stubgen",
     srcs = ["stubgen.py"],
     tags = ["no-cross"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//py_toxcore_c:pytox",
-    ],
+    deps = ["//py_toxcore_c:pytox"],
+)
+
+mypy_test(
+    name = "mypy_test",
+    srcs = glob(["**/*.py"]),
+    path = ["py_toxcore_c"],
+    tags = ["no-cross"],
+    deps = ["//py_toxcore_c:pytox"],
 )
