@@ -16,7 +16,7 @@ cdef class Tox_Pass_Key_Ptr:
             raise common.UseAfterFreeException()
         return self._ptr
 
-    def __dealloc__(self) -> None:
+    def __del__(self) -> None:
         self.__exit__(None, None, None)
 
     def __enter__(self: T) -> T:

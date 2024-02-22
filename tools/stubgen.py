@@ -15,6 +15,27 @@ PACKAGES = [
 ]
 
 
+def collect_imports(doc: str, imports: set[str], typevars: set[str], attr: object) -> str:
+    if " -> List" in doc:
+        imports.add("from typing import List")
+    if " -> Self" in doc:
+        imports.add("from typing import Self")
+    if " -> T" in doc:
+        imports.add("from typing import TypeVar")
+        typevars.add('T = TypeVar("T")')
+    if ": array" in doc:
+        imports.add("from array import array")
+        imports.add("from typing import Any")
+        doc = doc.replace(": array", ": array[Any]")
+    if ": Optional" in doc:
+        imports.add("from typing import Optional")
+    if ": TracebackType" in doc:
+        imports.add("from types import TracebackType")
+    if ": Tox_Ptr" in doc and attr.__module__ != "tox":
+        imports.add("from pytox.toxcore.tox import Tox_Ptr")
+    return doc
+
+
 def process_class(name: str, cls: list[str], imports: set[str],
                   typevars: set[str], attr: object) -> None:
     for mem in dir(attr):
@@ -24,21 +45,7 @@ def process_class(name: str, cls: list[str], imports: set[str],
             doc = mem_attr.__doc__.split("\n")[0]
             if " -> " not in doc:
                 doc += " -> None"
-            if " -> Self" in doc:
-                imports.add("from typing import Self")
-            if " -> T" in doc:
-                imports.add("from typing import TypeVar")
-                typevars.add('T = TypeVar("T")')
-            if ": array" in doc:
-                imports.add("from array import array")
-                imports.add("from typing import Any")
-                doc = doc.replace(": array", ": array[Any]")
-            if ": Optional" in doc:
-                imports.add("from typing import Optional")
-            if ": TracebackType" in doc:
-                imports.add("from types import TracebackType")
-            if ": Tox_Ptr" in doc and attr.__module__ != "tox":
-                imports.add("from pytox.toxcore.tox import Tox_Ptr")
+            doc = collect_imports(doc, imports, typevars, attr)
             cls.append(f"    def {doc}: ...")
         elif mem_attr.__class__.__name__ == "getset_descriptor":
             imports.add("from typing import Any")
@@ -112,16 +119,19 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
     )
     imports: set[str] = set()
     typevars: set[str] = set()
-    missing: set[str] = {
-        "Tox_Conference_Number",
-        "Tox_Conference_Peer_Number",
-        "Tox_File_Number",
-        "Tox_Friend_Number",
-        "Tox_Friend_Message_Id",
-        "Tox_Group_Number",
-        "Tox_Group_Peer_Number",
-        "Tox_Group_Message_Id",
-    }
+    missing: set[str] = set()
+    if name == "pytox.toxcore.tox":
+        missing = {
+            "Tox_Conference_Number",
+            "Tox_Conference_Offline_Peer_Number",
+            "Tox_Conference_Peer_Number",
+            "Tox_File_Number",
+            "Tox_Friend_Number",
+            "Tox_Friend_Message_Id",
+            "Tox_Group_Number",
+            "Tox_Group_Peer_Number",
+            "Tox_Group_Message_Id",
+        }
 
     for sym, attr in attrs:
         process_type(sym, attr, imports, typevars, classes)
@@ -137,7 +147,7 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
         for tv in sorted(typevars):
             pyi.write(tv + "\n")
         for m in sorted(missing):
-            pyi.write(f"class {m}: ...\n")
+            pyi.write(f"{m} = int\n")
         for cls in classes.values():
             pyi.write("\n".join(cls) + "\n")
         for c in consts:
