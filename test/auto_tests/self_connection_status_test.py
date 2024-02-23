@@ -16,6 +16,9 @@ class TestException(Exception):
 @dataclass
 class FriendInfo:
     connection_status: core.Tox_Connection = core.TOX_CONNECTION_NONE
+    status: core.Tox_User_Status = core.TOX_USER_STATUS_NONE
+    status_message: bytes = b""
+    name: bytes = b""
     request_message: bytes = b""
     messages: list[tuple[core.Tox_Message_Type, bytes]] = field(
         default_factory=list)
@@ -63,6 +66,17 @@ class TestTox(core.Tox_Ptr):
     def handle_friend_lossless_packet(self, friend_number: int,
                                       message: bytes) -> None:
         self.friends[friend_number].lossless_packets.append(message)
+
+    def handle_friend_name(self, friend_number: int, name: bytes) -> None:
+        self.friends[friend_number].name = name
+
+    def handle_friend_status(self, friend_number: int,
+                             status: core.Tox_User_Status) -> None:
+        self.friends[friend_number].status = status
+
+    def handle_friend_status_message(self, friend_number: int,
+                                     status_message: bytes) -> None:
+        self.friends[friend_number].status_message = status_message
 
 
 class AutoTest(unittest.TestCase):
@@ -168,6 +182,46 @@ class AutoTest(unittest.TestCase):
             self.tox1.public_key)]
         self._iterate(100, lambda: not friend.lossless_packets)
         self.assertEqual(friend.lossless_packets[0], b"\xa0general kenobi.")
+
+    def test_status(self) -> None:
+        self._wait_for_friend_online()
+        self.assertEqual(self.tox1.status, core.TOX_USER_STATUS_NONE)
+        self.tox1.status = core.TOX_USER_STATUS_AWAY
+        self.assertEqual(self.tox1.status, core.TOX_USER_STATUS_AWAY)
+        friend_number = self.tox2.friend_by_public_key(self.tox1.public_key)
+        friend = self.tox2.friends[friend_number]
+        self._iterate(100, lambda: friend.status == core.TOX_USER_STATUS_NONE)
+        self.assertEqual(friend.status, core.TOX_USER_STATUS_AWAY)
+        self.assertEqual(self.tox2.friend_get_status(friend_number),
+                         core.TOX_USER_STATUS_AWAY)
+
+    def test_name(self) -> None:
+        self._wait_for_friend_online()
+        self.assertEqual(self.tox1.name, b"")
+        self.tox1.name = b"Now that's a name I haven't heard in a long time"
+        self.assertEqual(self.tox1.name,
+                         b"Now that's a name I haven't heard in a long time")
+        friend_number = self.tox2.friend_by_public_key(self.tox1.public_key)
+        friend = self.tox2.friends[friend_number]
+        self._iterate(100, lambda: friend.name == b"")
+        self.assertEqual(friend.name,
+                         b"Now that's a name I haven't heard in a long time")
+        self.assertEqual(
+            self.tox2.friend_get_name(friend_number),
+            b"Now that's a name I haven't heard in a long time",
+        )
+
+    def test_status_message(self) -> None:
+        self._wait_for_friend_online()
+        self.assertEqual(self.tox1.status_message, b"")
+        self.tox1.status_message = b"Python rocks!"
+        self.assertEqual(self.tox1.status_message, b"Python rocks!")
+        friend_number = self.tox2.friend_by_public_key(self.tox1.public_key)
+        friend = self.tox2.friends[friend_number]
+        self._iterate(100, lambda: friend.status_message == b"")
+        self.assertEqual(friend.status_message, b"Python rocks!")
+        self.assertEqual(self.tox2.friend_get_status_message(friend_number),
+                         b"Python rocks!")
 
 
 if __name__ == "__main__":
