@@ -624,6 +624,20 @@ cdef class Tox_Ptr:
         finally:
             free(data)
 
+    def friend_get_name(self, friend_number: Tox_Friend_Number) -> bytes:
+        cdef Tox_Err_Friend_Query err = TOX_ERR_FRIEND_QUERY_OK
+        cdef size_t size = tox_friend_get_name_size(self._get(), friend_number, &err)
+        if err:
+            raise ApiException(Tox_Err_Friend_Query(err))
+        cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        try:
+            tox_friend_get_name(self._get(), friend_number, data, &err)
+            if err:
+                raise ApiException(Tox_Err_Friend_Query(err))
+            return data[:size]
+        finally:
+            free(data)
+
     def friend_get_connection_status(self, friend_number: Tox_Friend_Number) -> Tox_Connection:
         cdef Tox_Err_Friend_Query err = TOX_ERR_FRIEND_QUERY_OK
         cdef Tox_Connection res = tox_friend_get_connection_status(self._get(), friend_number, &err)
