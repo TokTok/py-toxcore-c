@@ -190,18 +190,22 @@ class AutoTest(unittest.TestCase):
         friend = self.tox2.friends[friend_number]
         self._iterate(100, lambda: friend.status == core.TOX_USER_STATUS_NONE)
         self.assertEqual(friend.status, core.TOX_USER_STATUS_AWAY)
-        self.assertEqual(self.tox2.friend_get_status(friend_number), core.TOX_USER_STATUS_AWAY)
+        self.assertEqual(self.tox2.friend_get_status(
+            friend_number), core.TOX_USER_STATUS_AWAY)
 
     def test_name(self) -> None:
         self._wait_for_friend_online()
         self.assertEqual(self.tox1.name, b"")
         self.tox1.name = b"Now that's a name I haven't heard in a long time"
-        self.assertEqual(self.tox1.name, b"Now that's a name I haven't heard in a long time")
+        self.assertEqual(
+            self.tox1.name, b"Now that's a name I haven't heard in a long time")
         friend_number = self.tox2.friend_by_public_key(self.tox1.public_key)
         friend = self.tox2.friends[friend_number]
         self._iterate(100, lambda: friend.name == b"")
-        self.assertEqual(friend.name, b"Now that's a name I haven't heard in a long time")
-        self.assertEqual(self.tox2.friend_get_name(friend_number), b"Now that's a name I haven't heard in a long time")
+        self.assertEqual(
+            friend.name, b"Now that's a name I haven't heard in a long time")
+        self.assertEqual(self.tox2.friend_get_name(friend_number),
+                         b"Now that's a name I haven't heard in a long time")
 
     def test_status_message(self) -> None:
         self._wait_for_friend_online()
@@ -212,7 +216,8 @@ class AutoTest(unittest.TestCase):
         friend = self.tox2.friends[friend_number]
         self._iterate(100, lambda: friend.status_message == b"")
         self.assertEqual(friend.status_message, b"Python rocks!")
-        self.assertEqual(self.tox2.friend_get_status_message(friend_number), b"Python rocks!")
+        self.assertEqual(self.tox2.friend_get_status_message(
+            friend_number), b"Python rocks!")
 
 
 if __name__ == "__main__":
