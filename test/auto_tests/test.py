@@ -19,7 +19,8 @@ class FriendInfo:
     messages: list[tuple[core.Tox_Message_Type, bytes]] = field(
         default_factory=list)
     # message_id -> read receipt
-    messages_sent: dict[int, bool] = field(default_factory=lambda: collections.defaultdict(bool))
+    messages_sent: dict[int, bool] = field(
+        default_factory=lambda: collections.defaultdict(bool))
     lossy_packets: list[bytes] = field(default_factory=list)
     lossless_packets: list[bytes] = field(default_factory=list)
 
@@ -34,8 +35,10 @@ class ConferenceInfo:
     title: tuple[int, bytes] = (0, b"")
     inviter: int = -1
     connected: bool = False
-    peers: dict[int, ConferencePeerInfo] = field(default_factory=lambda: collections.defaultdict(ConferencePeerInfo))
-    messages: list[tuple[int, core.Tox_Message_Type, bytes]] = field(default_factory=list)
+    peers: dict[int, ConferencePeerInfo] = field(
+        default_factory=lambda: collections.defaultdict(ConferencePeerInfo))
+    messages: list[tuple[int, core.Tox_Message_Type, bytes]
+                   ] = field(default_factory=list)
 
 
 class TestTox(core.Tox_Ptr):
@@ -132,10 +135,12 @@ class TestTox(core.Tox_Ptr):
 
     def handle_conference_message(self, conference_number: int, peer_number: int,
                                   type_: core.Tox_Message_Type, message: bytes) -> None:
-        self.conferences[conference_number].messages.append((peer_number, type_, message))
+        self.conferences[conference_number].messages.append(
+            (peer_number, type_, message))
 
     def handle_conference_title(self, conference_number: int, peer_number: int, title: bytes) -> None:
         self.conferences[conference_number].title = (peer_number, title)
+
 
 class AutoTest(unittest.TestCase):
 
@@ -171,9 +176,9 @@ class AutoTest(unittest.TestCase):
         self._wait_for_self_online()
         if not self.tox1.friend_list:
             self.tox1.friend_add(self.tox2.address,
-                                b"are you gonna be my best friend?")
+                                 b"are you gonna be my best friend?")
             self.tox2.friend_add(self.tox3.address,
-                                b"lala lala lala la I'm Mr. Happy Face")
+                                 b"lala lala lala la I'm Mr. Happy Face")
 
         def is_online() -> bool:
             return (self.tox1.friends[0].connection_status ==
@@ -300,7 +305,8 @@ class AutoTest(unittest.TestCase):
         cnum = self.tox1.conference_new()
         self.assertListEqual(self.tox1.conference_chatlist, [cnum])
         # tox1 invites tox2 to conference.
-        self.tox1.conference_invite(self.tox1.friend_by_public_key(self.tox2.public_key), cnum)
+        self.tox1.conference_invite(
+            self.tox1.friend_by_public_key(self.tox2.public_key), cnum)
         # wait for tox2 to join conference.
         self._iterate(100, lambda: not self.tox2.conference_chatlist)
         self.assertEqual(len(self.tox2.conference_chatlist), 1)
