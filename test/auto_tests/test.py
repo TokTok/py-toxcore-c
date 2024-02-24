@@ -16,11 +16,11 @@ class FriendInfo:
     name: bytes = b""
     request_message: bytes = b""
     typing: bool = False
-    messages: list[tuple[core.Tox_Message_Type, bytes]] = field(
-        default_factory=list)
+    messages: list[tuple[core.Tox_Message_Type, bytes]] = field(default_factory=list)
     # message_id -> read receipt
     messages_sent: dict[int, bool] = field(
-        default_factory=lambda: collections.defaultdict(bool))
+        default_factory=lambda: collections.defaultdict(bool)
+    )
     lossy_packets: list[bytes] = field(default_factory=list)
     lossless_packets: list[bytes] = field(default_factory=list)
 
@@ -36,9 +36,11 @@ class ConferenceInfo:
     inviter: int = -1
     connected: bool = False
     peers: dict[int, ConferencePeerInfo] = field(
-        default_factory=lambda: collections.defaultdict(ConferencePeerInfo))
-    messages: list[tuple[int, core.Tox_Message_Type, bytes]
-                   ] = field(default_factory=list)
+        default_factory=lambda: collections.defaultdict(ConferencePeerInfo)
+    )
+    messages: list[tuple[int, core.Tox_Message_Type, bytes]] = field(
+        default_factory=list
+    )
 
 
 class TestTox(core.Tox_Ptr):
@@ -53,26 +55,26 @@ class TestTox(core.Tox_Ptr):
         self.friends = collections.defaultdict(FriendInfo)
         self.conferences = collections.defaultdict(ConferenceInfo)
 
-    def handle_self_connection_status(self,
-                                      connection_status: core.Tox_Connection
-                                      ) -> None:
+    def handle_self_connection_status(
+        self, connection_status: core.Tox_Connection
+    ) -> None:
         self.connection_status = connection_status
 
     def handle_friend_name(self, friend_number: int, name: bytes) -> None:
         self.friends[friend_number].name = name
 
-    def handle_friend_status_message(self, friend_number: int,
-                                     status_message: bytes) -> None:
+    def handle_friend_status_message(
+        self, friend_number: int, status_message: bytes
+    ) -> None:
         self.friends[friend_number].status_message = status_message
 
-    def handle_friend_status(self, friend_number: int,
-                             status: core.Tox_User_Status) -> None:
+    def handle_friend_status(
+        self, friend_number: int, status: core.Tox_User_Status
+    ) -> None:
         self.friends[friend_number].status = status
 
     def handle_friend_connection_status(
-            self,
-            friend_number: int,
-            connection_status: core.Tox_Connection,
+        self, friend_number: int, connection_status: core.Tox_Connection,
     ) -> None:
         self.friends[friend_number].connection_status = connection_status
 
@@ -87,58 +89,75 @@ class TestTox(core.Tox_Ptr):
         friend_number = self.friend_add_norequest(public_key)
         self.friends[friend_number].request_message = message
 
-    def handle_friend_message(self, friend_number: int,
-                              type_: core.Tox_Message_Type,
-                              message: bytes) -> None:
+    def handle_friend_message(
+        self, friend_number: int, type_: core.Tox_Message_Type, message: bytes
+    ) -> None:
         self.friends[friend_number].messages.append((type_, message))
 
-    def handle_friend_lossy_packet(self, friend_number: int,
-                                   message: bytes) -> None:
+    def handle_friend_lossy_packet(self, friend_number: int, message: bytes) -> None:
         self.friends[friend_number].lossy_packets.append(message)
         raise Exception("OMG")
 
-    def handle_friend_lossless_packet(self, friend_number: int,
-                                      message: bytes) -> None:
+    def handle_friend_lossless_packet(self, friend_number: int, message: bytes) -> None:
         self.friends[friend_number].lossless_packets.append(message)
 
-    def handle_file_recv_control(self, friend_number: int, file_number: int,
-                                 control: core.Tox_File_Control) -> None:
+    def handle_file_recv_control(
+        self, friend_number: int, file_number: int, control: core.Tox_File_Control
+    ) -> None:
         pass
 
-    def handle_file_chunk_request(self, friend_number: int, file_number: int,
-                                  position: int, length: int) -> None:
+    def handle_file_chunk_request(
+        self, friend_number: int, file_number: int, position: int, length: int
+    ) -> None:
         pass
 
-    def handle_file_recv(self, friend_number: int, file_number: int, kind: int,
-                         file_size: int, filename: bytes) -> None:
+    def handle_file_recv(
+        self,
+        friend_number: int,
+        file_number: int,
+        kind: int,
+        file_size: int,
+        filename: bytes,
+    ) -> None:
         pass
 
-    def handle_file_recv_chunk(self, friend_number: int, file_number: int,
-                               position: int, data: bytes) -> None:
+    def handle_file_recv_chunk(
+        self, friend_number: int, file_number: int, position: int, data: bytes
+    ) -> None:
         pass
 
-    def handle_conference_peer_name(self, conference_number: int, peer_number: int,
-                                    name: bytes) -> None:
+    def handle_conference_peer_name(
+        self, conference_number: int, peer_number: int, name: bytes
+    ) -> None:
         self.conferences[conference_number].peers[peer_number].name = name
 
     def handle_conference_peer_list_changed(self, conference_number: int) -> None:
         pass
 
-    def handle_conference_invite(self, friend_number: int, type_: core.Tox_Conference_Type,
-                                 cookie: bytes) -> None:
-        assert(type_ == core.TOX_CONFERENCE_TYPE_TEXT)
+    def handle_conference_invite(
+        self, friend_number: int, type_: core.Tox_Conference_Type, cookie: bytes
+    ) -> None:
+        assert type_ == core.TOX_CONFERENCE_TYPE_TEXT
         conference_number = self.conference_join(friend_number, cookie)
         self.conferences[conference_number].inviter = friend_number
 
     def handle_conference_connected(self, conference_number: int) -> None:
         self.conferences[conference_number].connected = True
 
-    def handle_conference_message(self, conference_number: int, peer_number: int,
-                                  type_: core.Tox_Message_Type, message: bytes) -> None:
+    def handle_conference_message(
+        self,
+        conference_number: int,
+        peer_number: int,
+        type_: core.Tox_Message_Type,
+        message: bytes,
+    ) -> None:
         self.conferences[conference_number].messages.append(
-            (peer_number, type_, message))
+            (peer_number, type_, message)
+        )
 
-    def handle_conference_title(self, conference_number: int, peer_number: int, title: bytes) -> None:
+    def handle_conference_title(
+        self, conference_number: int, peer_number: int, title: bytes
+    ) -> None:
         self.conferences[conference_number].title = (peer_number, title)
 
 
@@ -164,31 +183,29 @@ class AutoTest(unittest.TestCase):
             return bool(
                 self.tox1.connection_status == core.TOX_CONNECTION_NONE
                 or self.tox2.connection_status == core.TOX_CONNECTION_NONE
-                or self.tox3.connection_status == core.TOX_CONNECTION_NONE)
+                or self.tox3.connection_status == core.TOX_CONNECTION_NONE
+            )
 
         # At most 20 seconds.
         self._iterate(
-            1000,
-            is_online,
+            1000, is_online,
         )
 
     def _wait_for_friend_online(self) -> None:
         self._wait_for_self_online()
         if not self.tox1.friend_list:
-            self.tox1.friend_add(self.tox2.address,
-                                 b"are you gonna be my best friend?")
-            self.tox2.friend_add(self.tox3.address,
-                                 b"lala lala lala la I'm Mr. Happy Face")
+            self.tox1.friend_add(self.tox2.address, b"are you gonna be my best friend?")
+            self.tox2.friend_add(
+                self.tox3.address, b"lala lala lala la I'm Mr. Happy Face"
+            )
 
         def is_online() -> bool:
-            return (self.tox1.friends[0].connection_status ==
-                    core.TOX_CONNECTION_NONE
-                    or self.tox2.friends[0].connection_status ==
-                    core.TOX_CONNECTION_NONE
-                    or self.tox2.friends[1].connection_status ==
-                    core.TOX_CONNECTION_NONE
-                    or self.tox3.friends[0].connection_status ==
-                    core.TOX_CONNECTION_NONE)
+            return (
+                self.tox1.friends[0].connection_status == core.TOX_CONNECTION_NONE
+                or self.tox2.friends[0].connection_status == core.TOX_CONNECTION_NONE
+                or self.tox2.friends[1].connection_status == core.TOX_CONNECTION_NONE
+                or self.tox3.friends[0].connection_status == core.TOX_CONNECTION_NONE
+            )
 
         # At most 5 seconds.
         self._iterate(250, is_online)
@@ -196,13 +213,15 @@ class AutoTest(unittest.TestCase):
     def test_friend_add(self) -> None:
         self._wait_for_friend_online()
         self.assertEqual(
-            self.tox2.friends[self.tox2.friend_by_public_key(
-                self.tox1.public_key)].request_message,
+            self.tox2.friends[
+                self.tox2.friend_by_public_key(self.tox1.public_key)
+            ].request_message,
             b"are you gonna be my best friend?",
         )
         self.assertEqual(
-            self.tox3.friends[self.tox3.friend_by_public_key(
-                self.tox2.public_key)].request_message,
+            self.tox3.friends[
+                self.tox3.friend_by_public_key(self.tox2.public_key)
+            ].request_message,
             b"lala lala lala la I'm Mr. Happy Face",
         )
 
@@ -210,18 +229,18 @@ class AutoTest(unittest.TestCase):
         with self.assertRaises(core.ApiException) as ex:
             # We're not our own friend.
             self.tox1.friend_by_public_key(self.tox1.public_key)
-        self.assertEqual(ex.exception.error,
-                         core.TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND)
+        self.assertEqual(
+            ex.exception.error, core.TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND
+        )
 
     def test_send_message(self) -> None:
         self._wait_for_friend_online()
-        self.tox1.friend_send_message(0, core.TOX_MESSAGE_TYPE_NORMAL,
-                                      b"hello there!")
-        friend = self.tox2.friends[self.tox2.friend_by_public_key(
-            self.tox1.public_key)]
+        self.tox1.friend_send_message(0, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!")
+        friend = self.tox2.friends[self.tox2.friend_by_public_key(self.tox1.public_key)]
         self._iterate(100, lambda: not friend.messages)
-        self.assertEqual(friend.messages[0],
-                         (core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!"))
+        self.assertEqual(
+            friend.messages[0], (core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!")
+        )
 
     # TODO(iphydf): This one doesn't pass. Investigate why.
     #   def test_send_lossy_packet(self) -> None:
@@ -235,8 +254,7 @@ class AutoTest(unittest.TestCase):
     def test_send_lossless_packet(self) -> None:
         self._wait_for_friend_online()
         self.tox1.friend_send_lossless_packet(0, b"\xa0general kenobi.")
-        friend = self.tox2.friends[self.tox2.friend_by_public_key(
-            self.tox1.public_key)]
+        friend = self.tox2.friends[self.tox2.friend_by_public_key(self.tox1.public_key)]
         self._iterate(100, lambda: not friend.lossless_packets)
         self.assertEqual(friend.lossless_packets[0], b"\xa0general kenobi.")
 
@@ -249,8 +267,9 @@ class AutoTest(unittest.TestCase):
         self.assertEqual(self.tox1.status, core.TOX_USER_STATUS_AWAY)
         self._iterate(100, lambda: friend.status == core.TOX_USER_STATUS_NONE)
         self.assertEqual(friend.status, core.TOX_USER_STATUS_AWAY)
-        self.assertEqual(self.tox2.friend_get_status(friend_number),
-                         core.TOX_USER_STATUS_AWAY)
+        self.assertEqual(
+            self.tox2.friend_get_status(friend_number), core.TOX_USER_STATUS_AWAY
+        )
 
     def test_name(self) -> None:
         self._wait_for_friend_online()
@@ -258,11 +277,13 @@ class AutoTest(unittest.TestCase):
         friend = self.tox2.friends[friend_number]
         self.assertEqual(self.tox1.name, b"")
         self.tox1.name = b"Now that's a name I haven't heard in a long time"
-        self.assertEqual(self.tox1.name,
-                         b"Now that's a name I haven't heard in a long time")
+        self.assertEqual(
+            self.tox1.name, b"Now that's a name I haven't heard in a long time"
+        )
         self._iterate(100, lambda: friend.name == b"")
-        self.assertEqual(friend.name,
-                         b"Now that's a name I haven't heard in a long time")
+        self.assertEqual(
+            friend.name, b"Now that's a name I haven't heard in a long time"
+        )
         self.assertEqual(
             self.tox2.friend_get_name(friend_number),
             b"Now that's a name I haven't heard in a long time",
@@ -277,8 +298,9 @@ class AutoTest(unittest.TestCase):
         self.assertEqual(self.tox1.status_message, b"Python rocks!")
         self._iterate(100, lambda: friend.status_message == b"")
         self.assertEqual(friend.status_message, b"Python rocks!")
-        self.assertEqual(self.tox2.friend_get_status_message(friend_number),
-                         b"Python rocks!")
+        self.assertEqual(
+            self.tox2.friend_get_status_message(friend_number), b"Python rocks!"
+        )
 
     def test_typing(self) -> None:
         self._wait_for_friend_online()
@@ -295,7 +317,8 @@ class AutoTest(unittest.TestCase):
         friend_number = self.tox1.friend_by_public_key(self.tox2.public_key)
         friend = self.tox1.friends[friend_number]
         msg_id = self.tox1.friend_send_message(
-            friend_number, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!")
+            friend_number, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!"
+        )
         self.assertFalse(friend.messages_sent[msg_id])
         self._iterate(100, lambda: not friend.messages_sent[msg_id])
 
@@ -306,7 +329,8 @@ class AutoTest(unittest.TestCase):
         self.assertListEqual(self.tox1.conference_chatlist, [cnum])
         # tox1 invites tox2 to conference.
         self.tox1.conference_invite(
-            self.tox1.friend_by_public_key(self.tox2.public_key), cnum)
+            self.tox1.friend_by_public_key(self.tox2.public_key), cnum
+        )
         # wait for tox2 to join conference.
         self._iterate(100, lambda: not self.tox2.conference_chatlist)
         self.assertEqual(len(self.tox2.conference_chatlist), 1)
