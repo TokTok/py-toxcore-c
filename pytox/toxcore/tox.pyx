@@ -591,6 +591,16 @@ cdef class Tox_Ptr:
     def friend_exists(self, friend_number: Tox_Friend_Number) -> bool:
         return tox_friend_exists(self._get(), friend_number)
 
+    @property
+    def friend_list(self) -> list[Tox_Friend_Number]:
+        cdef size_t size = tox_self_get_friend_list_size(self._get())
+        cdef Tox_Friend_Number *data = <Tox_Friend_Number*> malloc(size * sizeof(Tox_Friend_Number))
+        try:
+            tox_self_get_friend_list(self._get(), data)
+            return [data[i] for i in range(size)]
+        finally:
+            free(data)
+
     def friend_get_public_key(self, friend_number: Tox_Friend_Number) -> bytes:
         cdef size_t size = tox_public_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
@@ -741,9 +751,9 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Conference_Invite(err))
 
-    def conference_join(self, conference_number: Tox_Conference_Number, cookie: bytes) -> Tox_Conference_Number:
+    def conference_join(self, friend_number: Tox_Friend_Number, cookie: bytes) -> Tox_Conference_Number:
         cdef Tox_Err_Conference_Join err = TOX_ERR_CONFERENCE_JOIN_OK
-        cdef Tox_Conference_Number res = tox_conference_join(self._get(), conference_number, cookie, len(cookie), &err)
+        cdef Tox_Conference_Number res = tox_conference_join(self._get(), friend_number, cookie, len(cookie), &err)
         if err:
             raise ApiException(Tox_Err_Conference_Join(err))
         return res
@@ -860,7 +870,8 @@ cdef class Tox_Ptr:
             raise ApiException(Tox_Err_Conference_Peer_Query(err))
         return res
 
-    def conference_get_chatlist(self) -> List[Tox_Conference_Number]:
+    @property
+    def conference_chatlist(self) -> list[Tox_Conference_Number]:
         cdef size_t size = tox_conference_get_chatlist_size(self._get())
         cdef Tox_Conference_Number *data = <Tox_Conference_Number*> malloc(size * sizeof(Tox_Conference_Number))
         try:
