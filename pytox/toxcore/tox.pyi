@@ -99,6 +99,7 @@ class Tox_Options_Ptr:
     proxy_host: Any
     proxy_port: Any
     proxy_type: Any
+    savedata_data: Any
     savedata_type: Any
     start_port: Any
     tcp_port: Any
