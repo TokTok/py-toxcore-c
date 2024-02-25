@@ -343,14 +343,16 @@ class AutoTest(unittest.TestCase):
         cnum2 = self.tox2.conference_chatlist[0]
         cnum3 = self.tox3.conference_chatlist[0]
         # wait for all toxes to see all 3 peers.
-        self._iterate(100, lambda: any(len(tox.conferences[tox.conference_chatlist[0]].peers) < 2 for tox in (self.tox1, self.tox2, self.tox3)))
+        self._iterate(100, lambda: any(len(tox.conferences[tox.conference_chatlist[0]].peers) < 2 for tox in (
+            self.tox1, self.tox2, self.tox3)))
         # wait for group connection.
         self._iterate(100, lambda: not self.tox2.conferences[cnum2].connected)
         # tox2 sends message to conference.
         self.tox2.conference_send_message(cnum2, core.TOX_MESSAGE_TYPE_NORMAL,
                                           b"hello there!")
         # wait for tox1 to receive message.
-        self._iterate(100, lambda: any(not tox.conferences[tox.conference_chatlist[0]].messages for tox in (self.tox1, self.tox2, self.tox3)))
+        self._iterate(100, lambda: any(not tox.conferences[tox.conference_chatlist[0]].messages for tox in (
+            self.tox1, self.tox2, self.tox3)))
         self.assertEqual(self.tox1.conferences[cnum1].messages[0],
                          (1, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!"))
         self.assertEqual(self.tox2.conferences[cnum2].messages[0],
