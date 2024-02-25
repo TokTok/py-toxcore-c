@@ -7,6 +7,7 @@ TESTS = glob(["**/*.py"])
     name = src[:-3],
     size = "small",
     srcs = [src],
+    args = ["-v"],
     tags = ["no-cross"],
     deps = ["//py_toxcore_c:pytox"],
 ) for src in TESTS]
