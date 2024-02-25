@@ -337,8 +337,10 @@ class AutoTest(unittest.TestCase):
         self._iterate(100, lambda: not self.tox3.conference_chatlist)
         self.assertEqual(len(self.tox3.conference_chatlist), 1)
         # test conference_by_id.
-        self.assertEqual(self.tox1.conference_by_id(self.tox1.conference_get_id(cnum1)), cnum1)
-        self.assertEqual(self.tox1.conference_get_type(cnum1), core.TOX_CONFERENCE_TYPE_TEXT)
+        self.assertEqual(self.tox1.conference_by_id(
+            self.tox1.conference_get_id(cnum1)), cnum1)
+        self.assertEqual(self.tox1.conference_get_type(
+            cnum1), core.TOX_CONFERENCE_TYPE_TEXT)
 
     def test_conference_message(self) -> None:
         self._wait_for_friend_online()
@@ -407,8 +409,10 @@ class AutoTest(unittest.TestCase):
         self._iterate(100, lambda: any(
             tox.conferences[tox.conference_chatlist[0]].title[1] == b""
             for tox in (self.tox1, self.tox3)))
-        self.assertEqual(self.tox1.conferences[cnum2].title, (1, b"TokTok dev chat"))
-        self.assertEqual(self.tox3.conferences[cnum3].title, (1, b"TokTok dev chat"))
+        self.assertEqual(
+            self.tox1.conferences[cnum2].title, (1, b"TokTok dev chat"))
+        self.assertEqual(
+            self.tox3.conferences[cnum3].title, (1, b"TokTok dev chat"))
 
 
 if __name__ == "__main__":
