@@ -19,7 +19,6 @@ pyx_library(
     cython_directives = {
         "embedsignature": "True",
         "embedsignature.format": "python",
-        "language_level": "3",
     },
     tags = ["no-cross"],
     visibility = ["//visibility:public"],
