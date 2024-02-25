@@ -1,4 +1,5 @@
 # cython: language_level=3, linetrace=True
+from libc.string cimport memcpy
 from pytox import common
 from types import TracebackType
 from typing import TypeVar
@@ -264,11 +265,16 @@ cdef class Tox_Options_Ptr:
 
     @property
     def proxy_host(self) -> str:
-        return str(tox_options_get_proxy_host(self._get()))
+        return tox_options_get_proxy_host(self._get()).decode("utf-8")
 
     @proxy_host.setter
     def proxy_host(self, proxy_host: str):
-        tox_options_set_proxy_host(self._get(), proxy_host)
+        cdef size_t size = len(proxy_host) + 1
+        proxy_host_bytes = proxy_host.encode("utf-8") + b"\0"
+        cdef const char *proxy_host_chars = proxy_host_bytes
+        cdef char *data = <char*> malloc(size * sizeof(char))  # LEAK!
+        memcpy(data, proxy_host_chars, size)
+        tox_options_set_proxy_host(self._get(), data)
 
     @property
     def proxy_port(self) -> int:
@@ -317,6 +323,14 @@ cdef class Tox_Options_Ptr:
     @savedata_type.setter
     def savedata_type(self, savedata_type: Tox_Savedata_Type):
         tox_options_set_savedata_type(self._get(), savedata_type)
+
+    @property
+    def savedata_data(self) -> bytes:
+        raise Exception("Not implemented")  # TODO(iphydf): Implement
+
+    @savedata_data.setter
+    def savedata_data(self, savedata_data: bytes):
+        tox_options_set_savedata_data(self._get(), savedata_data, len(savedata_data))
 
     @property
     def experimental_thread_safety(self) -> bool:
