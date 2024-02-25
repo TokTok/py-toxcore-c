@@ -52,6 +52,7 @@ class TestTox(core.Tox_Ptr):
         self.index = index
         self.friends = collections.defaultdict(FriendInfo)
         self.conferences = collections.defaultdict(ConferenceInfo)
+        self.name = f"tox{index}".encode("utf-8")
 
     def handle_self_connection_status(self,
                                       connection_status: core.Tox_Connection
@@ -271,11 +272,11 @@ class AutoTest(unittest.TestCase):
         self._wait_for_friend_online()
         friend_number = self.tox2.friend_by_public_key(self.tox1.public_key)
         friend = self.tox2.friends[friend_number]
-        self.assertEqual(self.tox1.name, b"")
+        self.assertEqual(self.tox1.name, b"tox1")
         self.tox1.name = b"Now that's a name I haven't heard in a long time"
         self.assertEqual(self.tox1.name,
                          b"Now that's a name I haven't heard in a long time")
-        self._iterate(100, lambda: friend.name == b"")
+        self._iterate(100, lambda: friend.name == b"tox1")
         self.assertEqual(friend.name,
                          b"Now that's a name I haven't heard in a long time")
         self.assertEqual(
@@ -318,14 +319,44 @@ class AutoTest(unittest.TestCase):
     def test_conference_invite(self) -> None:
         self._wait_for_friend_online()
         # tox1 creates conference.
-        cnum = self.tox1.conference_new()
-        self.assertListEqual(self.tox1.conference_chatlist, [cnum])
+        cnum1 = self.tox1.conference_new()
+        self.assertListEqual(self.tox1.conference_chatlist, [cnum1])
         # tox1 invites tox2 to conference.
         self.tox1.conference_invite(
-            self.tox1.friend_by_public_key(self.tox2.public_key), cnum)
+            self.tox1.friend_by_public_key(self.tox2.public_key), cnum1)
         # wait for tox2 to join conference.
         self._iterate(100, lambda: not self.tox2.conference_chatlist)
         self.assertEqual(len(self.tox2.conference_chatlist), 1)
+        # wait for group connection.
+        cnum2 = self.tox2.conference_chatlist[0]
+        self._iterate(100, lambda: not self.tox2.conferences[cnum2].connected)
+        # tox2 invites tox3 to conference.
+        self.tox2.conference_invite(
+            self.tox2.friend_by_public_key(self.tox3.public_key), cnum2)
+        # wait for tox3 to join conference.
+        self._iterate(100, lambda: not self.tox3.conference_chatlist)
+        self.assertEqual(len(self.tox3.conference_chatlist), 1)
+
+    def test_conference_message(self) -> None:
+        self._wait_for_friend_online()
+        cnum1 = self.tox1.conference_chatlist[0]
+        cnum2 = self.tox2.conference_chatlist[0]
+        cnum3 = self.tox3.conference_chatlist[0]
+        # wait for all toxes to see all 3 peers.
+        self._iterate(100, lambda: any(len(tox.conferences[tox.conference_chatlist[0]].peers) < 2 for tox in (self.tox1, self.tox2, self.tox3)))
+        # wait for group connection.
+        self._iterate(100, lambda: not self.tox2.conferences[cnum2].connected)
+        # tox2 sends message to conference.
+        self.tox2.conference_send_message(cnum2, core.TOX_MESSAGE_TYPE_NORMAL,
+                                          b"hello there!")
+        # wait for tox1 to receive message.
+        self._iterate(100, lambda: any(not tox.conferences[tox.conference_chatlist[0]].messages for tox in (self.tox1, self.tox2, self.tox3)))
+        self.assertEqual(self.tox1.conferences[cnum1].messages[0],
+                         (1, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!"))
+        self.assertEqual(self.tox2.conferences[cnum2].messages[0],
+                         (1, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!"))
+        self.assertEqual(self.tox3.conferences[cnum3].messages[0],
+                         (1, core.TOX_MESSAGE_TYPE_NORMAL, b"hello there!"))
 
 
 if __name__ == "__main__":

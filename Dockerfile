@@ -44,4 +44,4 @@ COPY test /build/test
 RUN . /path/to/venv/bin/activate \
  && coverage run -m unittest discover -v -p "*_test.py"
 RUN . /path/to/venv/bin/activate \
- && coverage report -m
+ && coverage report -m --fail-under=63
