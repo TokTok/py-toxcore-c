@@ -1,7 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_test")
 load("//third_party/python:build_defs.bzl", "mypy_test")
 
-TESTS = glob(["**/*.py"])
+TESTS = glob(["**/*_test.py"])
 
 [py_test(
     name = src[:-3],

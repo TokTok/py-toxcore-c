@@ -473,7 +473,10 @@ cdef class Tox_Ptr:
     def bootstrap(self, host: str, port: int, public_key: bytes) -> bool:
         common.check_len("public_key", public_key, tox_public_key_size())
         cdef Tox_Err_Bootstrap err = TOX_ERR_BOOTSTRAP_OK
-        return tox_bootstrap(self._get(), host.encode("utf-8"), port, public_key, &err)
+        cdef bool res = tox_bootstrap(self._get(), host.encode("utf-8"), port, public_key, &err)
+        if err:
+            raise ApiException(Tox_Err_Bootstrap(err))
+        return res
 
     @property
     def iteration_interval(self) -> int:
@@ -515,7 +518,7 @@ cdef class Tox_Ptr:
     @property
     def udp_port(self) -> int:
         cdef Tox_Err_Get_Port err = TOX_ERR_GET_PORT_OK
-        cdef bool res = tox_self_get_udp_port(self._get(), &err)
+        cdef uint16_t res = tox_self_get_udp_port(self._get(), &err)
         if err:
             raise ApiException(Tox_Err_Get_Port(err))
         return res
@@ -523,7 +526,7 @@ cdef class Tox_Ptr:
     @property
     def tcp_port(self) -> int:
         cdef Tox_Err_Get_Port err = TOX_ERR_GET_PORT_OK
-        cdef bool res = tox_self_get_tcp_port(self._get(), &err)
+        cdef uint16_t res = tox_self_get_tcp_port(self._get(), &err)
         if err:
             raise ApiException(Tox_Err_Get_Port(err))
         return res

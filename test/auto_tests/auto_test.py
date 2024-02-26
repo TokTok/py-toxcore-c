@@ -48,7 +48,9 @@ class TestTox(core.Tox_Ptr):
     conferences: dict[int, ConferenceInfo]
 
     def __init__(self, index: int) -> None:
-        super(TestTox, self).__init__()
+        with core.Tox_Options_Ptr() as options:
+            options.local_discovery_enabled = False
+            super(TestTox, self).__init__(options)
         self.index = index
         self.friends = collections.defaultdict(FriendInfo)
         self.conferences = collections.defaultdict(ConferenceInfo)
@@ -176,6 +178,9 @@ class AutoTest(unittest.TestCase):
         self.fail(f"condition not met after {max_iterate} iterations")
 
     def _wait_for_self_online(self) -> None:
+        self.tox2.bootstrap("127.0.0.1", self.tox1.udp_port, self.tox1.dht_id)
+        self.tox3.bootstrap("127.0.0.1", self.tox1.udp_port, self.tox1.dht_id)
+
         def is_online() -> bool:
             return bool(
                 self.tox1.connection_status == core.TOX_CONNECTION_NONE
@@ -226,7 +231,7 @@ class AutoTest(unittest.TestCase):
         with self.assertRaises(core.ApiException) as ex:
             # We're not our own friend.
             self.tox1.friend_by_public_key(self.tox1.public_key)
-        self.assertEqual(ex.exception.error,
+        self.assertEqual(ex.exception.code,
                          core.TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND)
 
     def test_send_message(self) -> None:

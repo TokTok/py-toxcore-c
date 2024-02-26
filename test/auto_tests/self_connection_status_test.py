@@ -24,7 +24,9 @@ class TestTox(core.Tox_Ptr):
     friends: dict[int, FriendInfo]
 
     def __init__(self, index: int) -> None:
-        super(TestTox, self).__init__()
+        with core.Tox_Options_Ptr() as options:
+            options.local_discovery_enabled = False
+            super(TestTox, self).__init__(options)
         self.index = index
         self.friends = collections.defaultdict(FriendInfo)
 
@@ -64,6 +66,9 @@ class AutoTest(unittest.TestCase):
         self.fail(f"condition not met after {max_iterate} iterations")
 
     def _wait_for_self_online(self) -> None:
+        self.tox2.bootstrap("127.0.0.1", self.tox1.udp_port, self.tox1.dht_id)
+        self.tox3.bootstrap("127.0.0.1", self.tox1.udp_port, self.tox1.dht_id)
+
         def is_online() -> bool:
             return bool(
                 self.tox1.connection_status == core.TOX_CONNECTION_NONE
