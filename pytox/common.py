@@ -32,5 +32,6 @@ def check_len(name: str, data: T, expected_length: int) -> T:
     if len(data) < expected_length:
         raise LengthException(
             f"parameter '{name}' received bytes of invalid"
-            f"length {len(data)}, expected at least {expected_length}")
+            f"length {len(data)}, expected at least {expected_length}"
+        )
     return data
