@@ -22,7 +22,7 @@ class ToxencryptsaveTest(unittest.TestCase):
             with c.Tox_Pass_Key_Ptr(b"hello", b"b" * 32) as pk2:
                 with self.assertRaises(c.ApiException) as ex:
                     pk2.decrypt(pk1.encrypt(b"hello world"))
-                self.assertEqual(ex.exception.error.name,
+                self.assertEqual(ex.exception.code.name,
                                  c.TOX_ERR_DECRYPTION_FAILED.name)
 
     def test_salt_too_small(self) -> None:

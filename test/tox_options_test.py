@@ -51,6 +51,9 @@ class ToxOptionsTest(unittest.TestCase):
 
         # Can't test whether it works, but at least we can test that it doesn't crash.
         opts.savedata_data = b"test"
+        with self.assertRaises(Exception):
+            # not implemented
+            print(opts.savedata_data)
 
         self.assertFalse(opts.experimental_thread_safety)
         opts.experimental_thread_safety = True

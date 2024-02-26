@@ -9,12 +9,6 @@ class ToxTest(unittest.TestCase):
     def test_version(self) -> None:
         self.assertEqual(len(c.VERSION.split(".")), 3)
 
-    def test_options(self) -> None:
-        opts = c.Tox_Options_Ptr()
-        self.assertTrue(opts.ipv6_enabled)
-        opts.ipv6_enabled = False
-        self.assertFalse(opts.ipv6_enabled)
-
     def test_use_after_free(self) -> None:
         opts = c.Tox_Options_Ptr()
         with c.Tox_Ptr(opts) as tox:
@@ -31,10 +25,25 @@ class ToxTest(unittest.TestCase):
         with c.Tox_Ptr(None):
             pass
 
+    def test_pass_invalid_options(self) -> None:
+        opts = c.Tox_Options_Ptr()
+        opts.proxy_type = c.TOX_PROXY_TYPE_SOCKS5
+        opts.proxy_host = "invalid-host"
+        opts.proxy_port = 1234
+        with self.assertRaises(c.ApiException) as e:
+            c.Tox_Ptr(opts)
+        self.assertEqual(e.exception.code, c.TOX_ERR_NEW_PROXY_BAD_HOST)
+
     def test_address(self) -> None:
         opts = c.Tox_Options_Ptr()
         with c.Tox_Ptr(opts) as tox:
             self.assertEqual(tox.address, tox.address)
+
+    def test_nospam(self) -> None:
+        with c.Tox_Ptr(None) as tox:
+            tox.nospam = 0x12345678
+            self.assertEqual(tox.nospam, 0x12345678)
+            self.assertEqual(tox.address[-6:-2].hex(), "12345678")
 
     def test_public_key_is_address_prefix(self) -> None:
         opts = c.Tox_Options_Ptr()
@@ -89,6 +98,17 @@ class ToxTest(unittest.TestCase):
                 with self.assertRaises(common.LengthException):
                     tox2.friend_add(tox1.public_key, b"oh no!")
 
+    def test_invalid_bootstrap(self) -> None:
+        with c.Tox_Ptr() as tox:
+            with self.assertRaises(c.ApiException) as e:
+                tox.bootstrap("invalid-host", 1234, bytes(c.PUBLIC_KEY_SIZE))
+            self.assertEqual(e.exception.code, c.TOX_ERR_BOOTSTRAP_BAD_HOST)
+
+    def test_bootstrap_checks_key_length(self) -> None:
+        with c.Tox_Ptr() as tox:
+            with self.assertRaises(common.LengthException) as e:
+                tox.bootstrap("localhost", 1234, bytes(c.PUBLIC_KEY_SIZE - 1))
+
     def test_friend_delete(self) -> None:
         with c.Tox_Ptr() as tox1:
             with c.Tox_Ptr() as tox2:
@@ -97,6 +117,28 @@ class ToxTest(unittest.TestCase):
                 with self.assertRaises(c.ApiException):
                     # Deleting again: we don't have that friend anymore.
                     tox1.friend_delete(0)
+
+    def test_udp_port_fails_when_udp_disabled(self) -> None:
+        with c.Tox_Options_Ptr() as opts:
+            opts.udp_enabled = False
+            with c.Tox_Ptr(opts) as tox:
+                with self.assertRaises(c.ApiException) as e:
+                    tox.udp_port
+                self.assertEqual(e.exception.code, c.TOX_ERR_GET_PORT_NOT_BOUND)
+
+    def test_tcp_port_fails_when_tcp_disabled(self) -> None:
+        with c.Tox_Options_Ptr() as opts:
+            opts.tcp_port = 0
+            with c.Tox_Ptr(opts) as tox:
+                with self.assertRaises(c.ApiException) as e:
+                    tox.tcp_port
+                self.assertEqual(e.exception.code, c.TOX_ERR_GET_PORT_NOT_BOUND)
+
+    def test_tcp_port(self) -> None:
+        with c.Tox_Options_Ptr() as opts:
+            opts.tcp_port = 1234
+            with c.Tox_Ptr(opts) as tox:
+                self.assertEqual(tox.tcp_port, 1234)
 
 
 if __name__ == "__main__":

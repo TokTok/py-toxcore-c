@@ -10,9 +10,11 @@ class PytoxException(Exception):
 
 
 class ApiException(PytoxException):
+    code: enum.Enum
+
     def __init__(self, err: enum.Enum):
         super().__init__(err.name)
-        self.error = err
+        self.code = err
 
 
 class LengthException(PytoxException):
