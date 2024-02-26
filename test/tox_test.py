@@ -124,7 +124,8 @@ class ToxTest(unittest.TestCase):
             with c.Tox_Ptr(opts) as tox:
                 with self.assertRaises(c.ApiException) as e:
                     tox.udp_port
-                self.assertEqual(e.exception.code, c.TOX_ERR_GET_PORT_NOT_BOUND)
+                self.assertEqual(e.exception.code,
+                                 c.TOX_ERR_GET_PORT_NOT_BOUND)
 
     def test_tcp_port_fails_when_tcp_disabled(self) -> None:
         with c.Tox_Options_Ptr() as opts:
@@ -132,7 +133,8 @@ class ToxTest(unittest.TestCase):
             with c.Tox_Ptr(opts) as tox:
                 with self.assertRaises(c.ApiException) as e:
                     tox.tcp_port
-                self.assertEqual(e.exception.code, c.TOX_ERR_GET_PORT_NOT_BOUND)
+                self.assertEqual(e.exception.code,
+                                 c.TOX_ERR_GET_PORT_NOT_BOUND)
 
     def test_tcp_port(self) -> None:
         with c.Tox_Options_Ptr() as opts:
