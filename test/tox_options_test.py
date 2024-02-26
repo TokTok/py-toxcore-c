@@ -60,7 +60,6 @@ class ToxOptionsTest(unittest.TestCase):
         opts.experimental_groups_persistence = True
         self.assertTrue(opts.experimental_groups_persistence)
 
-
     def test_use_after_free(self) -> None:
         with c.Tox_Options_Ptr() as opts:
             pass
