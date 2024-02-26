@@ -1,5 +1,6 @@
 import enum
-from typing import Sized, TypeVar
+from typing import Sized
+from typing import TypeVar
 
 T = TypeVar("T", bytes, str, Sized)
 
