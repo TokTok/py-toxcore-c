@@ -46,7 +46,7 @@ jobs:
           -DMUST_BUILD_TOXAV=ON
       - run: cd c-toxcore/_build && ninja install -j$(nproc)
       - run: |
-          export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address"
+          export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address,undefined"
           export LDFLAGS="-L$PWD/c-toxcore/_install/lib -Wl,-rpath,$PWD/c-toxcore/_install/lib"
           cython -I. $(find pytox -name "*.pyx")
           python3 setup.py build_ext --inplace
