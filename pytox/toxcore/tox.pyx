@@ -102,8 +102,8 @@ cdef:
         py_handle_group_self_join(<Tox_Ptr> user_data, group_number)
     void py_handle_group_peer_name(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, name: bytes) except *:
         self.handle_group_peer_name(group_number, peer_id, name)
-    void handle_group_peer_name(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, const uint8_t* name, size_t length, void* user_data) except *:
-        py_handle_group_peer_name(<Tox_Ptr> user_data, group_number, peer_id, name[:length])
+    void handle_group_peer_name(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, const uint8_t* name, size_t name_length, void* user_data) except *:
+        py_handle_group_peer_name(<Tox_Ptr> user_data, group_number, peer_id, name[:name_length])
     void py_handle_group_peer_status(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, status: Tox_User_Status) except *:
         self.handle_group_peer_status(group_number, peer_id, status)
     void handle_group_peer_status(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_User_Status status, void* user_data) except *:
@@ -122,8 +122,8 @@ cdef:
         py_handle_group_peer_exit(<Tox_Ptr> user_data, group_number, peer_id, exit_type, name[:name_length], part_message[:part_message_length])
     void py_handle_group_topic(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, topic: bytes) except *:
         self.handle_group_topic(group_number, peer_id, topic)
-    void handle_group_topic(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, const uint8_t* topic, size_t length, void* user_data) except *:
-        py_handle_group_topic(<Tox_Ptr> user_data, group_number, peer_id, topic[:length])
+    void handle_group_topic(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, const uint8_t* topic, size_t topic_length, void* user_data) except *:
+        py_handle_group_topic(<Tox_Ptr> user_data, group_number, peer_id, topic[:topic_length])
     void py_handle_group_privacy_state(self: Tox_Ptr, group_number: Tox_Group_Number, privacy_state: Tox_Group_Privacy_State) except *:
         self.handle_group_privacy_state(group_number, privacy_state)
     void handle_group_privacy_state(Tox* tox, Tox_Group_Number group_number, Tox_Group_Privacy_State privacy_state, void* user_data) except *:
@@ -138,28 +138,28 @@ cdef:
         py_handle_group_topic_lock(<Tox_Ptr> user_data, group_number, Tox_Group_Topic_Lock(topic_lock))
     void py_handle_group_password(self: Tox_Ptr, group_number: Tox_Group_Number, password: bytes) except *:
         self.handle_group_password(group_number, password)
-    void handle_group_password(Tox* tox, Tox_Group_Number group_number, const uint8_t* password, size_t length, void* user_data) except *:
-        py_handle_group_password(<Tox_Ptr> user_data, group_number, password[:length])
-    void py_handle_group_message(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, type_: Tox_Message_Type, message: bytes, message_id: Tox_Group_Message_Id) except *:
-        self.handle_group_message(group_number, peer_id, type_, message, message_id)
-    void handle_group_message(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type type_, const uint8_t* message, size_t length, Tox_Group_Message_Id message_id, void* user_data) except *:
-        py_handle_group_message(<Tox_Ptr> user_data, group_number, peer_id, Tox_Message_Type(type_), message[:length], message_id)
-    void py_handle_group_private_message(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, type_: Tox_Message_Type, message: bytes) except *:
-        self.handle_group_private_message(group_number, peer_id, type_, message)
-    void handle_group_private_message(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type type_, const uint8_t* message, size_t length, void* user_data) except *:
-        py_handle_group_private_message(<Tox_Ptr> user_data, group_number, peer_id, Tox_Message_Type(type_), message[:length])
+    void handle_group_password(Tox* tox, Tox_Group_Number group_number, const uint8_t* password, size_t password_length, void* user_data) except *:
+        py_handle_group_password(<Tox_Ptr> user_data, group_number, password[:password_length])
+    void py_handle_group_message(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, message_type: Tox_Message_Type, message: bytes, message_id: Tox_Group_Message_Id) except *:
+        self.handle_group_message(group_number, peer_id, message_type, message, message_id)
+    void handle_group_message(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type message_type, const uint8_t* message, size_t message_length, Tox_Group_Message_Id message_id, void* user_data) except *:
+        py_handle_group_message(<Tox_Ptr> user_data, group_number, peer_id, Tox_Message_Type(message_type), message[:message_length], message_id)
+    void py_handle_group_private_message(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, message_type: Tox_Message_Type, message: bytes, message_id: Tox_Group_Message_Id) except *:
+        self.handle_group_private_message(group_number, peer_id, message_type, message, message_id)
+    void handle_group_private_message(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type message_type, const uint8_t* message, size_t message_length, Tox_Group_Message_Id message_id, void* user_data) except *:
+        py_handle_group_private_message(<Tox_Ptr> user_data, group_number, peer_id, Tox_Message_Type(message_type), message[:message_length], message_id)
     void py_handle_group_custom_packet(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, data: bytes) except *:
         self.handle_group_custom_packet(group_number, peer_id, data)
-    void handle_group_custom_packet(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, const uint8_t* data, size_t length, void* user_data) except *:
-        py_handle_group_custom_packet(<Tox_Ptr> user_data, group_number, peer_id, data[:length])
+    void handle_group_custom_packet(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, const uint8_t* data, size_t data_length, void* user_data) except *:
+        py_handle_group_custom_packet(<Tox_Ptr> user_data, group_number, peer_id, data[:data_length])
     void py_handle_group_custom_private_packet(self: Tox_Ptr, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, data: bytes) except *:
         self.handle_group_custom_private_packet(group_number, peer_id, data)
-    void handle_group_custom_private_packet(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, const uint8_t* data, size_t length, void* user_data) except *:
-        py_handle_group_custom_private_packet(<Tox_Ptr> user_data, group_number, peer_id, data[:length])
+    void handle_group_custom_private_packet(Tox* tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, const uint8_t* data, size_t data_length, void* user_data) except *:
+        py_handle_group_custom_private_packet(<Tox_Ptr> user_data, group_number, peer_id, data[:data_length])
     void py_handle_group_invite(self: Tox_Ptr, friend_number: Tox_Friend_Number, invite_data: bytes, group_name: bytes) except *:
         self.handle_group_invite(friend_number, invite_data, group_name)
-    void handle_group_invite(Tox* tox, Tox_Friend_Number friend_number, const uint8_t* invite_data, size_t length, const uint8_t* group_name, size_t group_name_length, void* user_data) except *:
-        py_handle_group_invite(<Tox_Ptr> user_data, friend_number, invite_data[:length], group_name[:group_name_length])
+    void handle_group_invite(Tox* tox, Tox_Friend_Number friend_number, const uint8_t* invite_data, size_t invite_data_length, const uint8_t* group_name, size_t group_name_length, void* user_data) except *:
+        py_handle_group_invite(<Tox_Ptr> user_data, friend_number, invite_data[:invite_data_length], group_name[:group_name_length])
     void py_handle_group_join_fail(self: Tox_Ptr, group_number: Tox_Group_Number, fail_type: Tox_Group_Join_Fail) except *:
         self.handle_group_join_fail(group_number, fail_type)
     void handle_group_join_fail(Tox* tox, Tox_Group_Number group_number, Tox_Group_Join_Fail fail_type, void* user_data) except *:
@@ -443,8 +443,8 @@ cdef class Tox_Ptr:
     def handle_group_voice_state(self, group_number: Tox_Group_Number, voice_state: Tox_Group_Voice_State) -> None: pass
     def handle_group_topic_lock(self, group_number: Tox_Group_Number, topic_lock: Tox_Group_Topic_Lock) -> None: pass
     def handle_group_password(self, group_number: Tox_Group_Number, password: bytes) -> None: pass
-    def handle_group_message(self, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, type_: Tox_Message_Type, message: bytes, message_id: Tox_Group_Message_Id) -> None: pass
-    def handle_group_private_message(self, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, type_: Tox_Message_Type, message: bytes) -> None: pass
+    def handle_group_message(self, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, message_type: Tox_Message_Type, message: bytes, message_id: Tox_Group_Message_Id) -> None: pass
+    def handle_group_private_message(self, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, message_type: Tox_Message_Type, message: bytes, message_id: Tox_Group_Message_Id) -> None: pass
     def handle_group_custom_packet(self, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, data: bytes) -> None: pass
     def handle_group_custom_private_packet(self, group_number: Tox_Group_Number, peer_id: Tox_Group_Peer_Number, data: bytes) -> None: pass
     def handle_group_invite(self, friend_number: Tox_Friend_Number, invite_data: bytes, group_name: bytes) -> None: pass
