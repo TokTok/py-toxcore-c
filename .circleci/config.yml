@@ -30,8 +30,11 @@ jobs:
           pkg-config
           python3-dev
           python3-pip
-          python3-setuptools
-      - run: pip install cython
+          python3-venv
+      - run: python3 -m venv /tmp/path/to/venv
+      - run: |
+          . /tmp/path/to/venv/bin/activate
+          pip install cython setuptools
       - run: git clone --depth=1 --recursive https://github.com/TokTok/c-toxcore
       - run: cd c-toxcore;
           . .github/scripts/flags-gcc.sh;
@@ -46,11 +49,14 @@ jobs:
           -DMUST_BUILD_TOXAV=ON
       - run: cd c-toxcore/_build && ninja install -j$(nproc)
       - run: |
+          . /tmp/path/to/venv/bin/activate
           export CFLAGS="-I$PWD/c-toxcore/_install/include -fsanitize=address,undefined"
           export LDFLAGS="-L$PWD/c-toxcore/_install/lib -Wl,-rpath,$PWD/c-toxcore/_install/lib"
           cython -I. $(find pytox -name "*.pyx")
           python3 setup.py build_ext --inplace
-      - run: ASAN_OPTIONS=detect_leaks=0
-          LD_PRELOAD=libasan.so.6
-          PYTHONPATH=.
+      - run: |
+          . /tmp/path/to/venv/bin/activate
+          export ASAN_OPTIONS=detect_leaks=0
+          export LD_PRELOAD=libasan.so.8
+          export PYTHONPATH=.
           python3 -m unittest $(find test -name "*_test.py")

@@ -26,6 +26,9 @@ pyx_library(
 
 mypy_test(
     name = "mypy_test",
-    srcs = glob(["**/*.py"]),
+    srcs = glob(
+        ["**/*.py"],
+        exclude = ["setup.py"],
+    ),
     path = ["py_toxcore_c"],
 )
