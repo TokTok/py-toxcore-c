@@ -1,11 +1,11 @@
 # cython: language_level=3, linetrace=True
-from libc.string cimport memcpy
+from array import array
 from pytox import common
 from types import TracebackType
+from typing import Optional
 from typing import TypeVar
 
 T = TypeVar("T")
-
 
 class ApiException(common.ApiException):
     pass
@@ -269,12 +269,7 @@ cdef class Tox_Options_Ptr:
 
     @proxy_host.setter
     def proxy_host(self, proxy_host: str):
-        cdef size_t size = len(proxy_host) + 1
-        proxy_host_bytes = proxy_host.encode("utf-8") + b"\0"
-        cdef const char *proxy_host_chars = proxy_host_bytes
-        cdef char *data = <char*> malloc(size * sizeof(char))  # LEAK!
-        memcpy(data, proxy_host_chars, size)
-        tox_options_set_proxy_host(self._get(), data)
+        tox_options_set_proxy_host(self._get(), proxy_host.encode("utf-8"))
 
     @property
     def proxy_port(self) -> int:
@@ -326,11 +321,19 @@ cdef class Tox_Options_Ptr:
 
     @property
     def savedata_data(self) -> bytes:
-        raise Exception("Not implemented")  # TODO(iphydf): Implement
+        return tox_options_get_savedata_data(self._get())[:tox_options_get_savedata_length(self._get())]
 
     @savedata_data.setter
     def savedata_data(self, savedata_data: bytes):
         tox_options_set_savedata_data(self._get(), savedata_data, len(savedata_data))
+
+    @property
+    def experimental_owned_data(self) -> bool:
+        return tox_options_get_experimental_owned_data(self._get())
+
+    @experimental_owned_data.setter
+    def experimental_owned_data(self, experimental_owned_data: bool):
+        tox_options_set_experimental_owned_data(self._get(), experimental_owned_data)
 
     @property
     def experimental_thread_safety(self) -> bool:
@@ -347,6 +350,14 @@ cdef class Tox_Options_Ptr:
     @experimental_groups_persistence.setter
     def experimental_groups_persistence(self, experimental_groups_persistence: bool):
         tox_options_set_experimental_groups_persistence(self._get(), experimental_groups_persistence)
+
+    @property
+    def experimental_disable_dns(self) -> bool:
+        return tox_options_get_experimental_disable_dns(self._get())
+
+    @experimental_disable_dns.setter
+    def experimental_disable_dns(self, experimental_disable_dns: bool):
+        tox_options_set_experimental_disable_dns(self._get(), experimental_disable_dns)
 
     cdef Tox_Options* _new(self):
         cdef Tox_Err_Options_New error = TOX_ERR_OPTIONS_NEW_OK
@@ -405,7 +416,7 @@ cdef class Tox_Ptr:
 
     @status.setter
     def status(self, status: Tox_User_Status):
-        tox_self_set_status(self._get(), status)
+        tox_self_set_status(self._get(), Tox_User_Status(status))
 
     @property
     def group_number_groups(self) -> int:
@@ -474,6 +485,14 @@ cdef class Tox_Ptr:
         common.check_len("public_key", public_key, tox_public_key_size())
         cdef Tox_Err_Bootstrap err = TOX_ERR_BOOTSTRAP_OK
         cdef bool res = tox_bootstrap(self._get(), host.encode("utf-8"), port, public_key, &err)
+        if err:
+            raise ApiException(Tox_Err_Bootstrap(err))
+        return res
+
+    def add_tcp_relay(self, host: str, port: int, public_key: bytes) -> bool:
+        common.check_len("public_key", public_key, tox_public_key_size())
+        cdef Tox_Err_Bootstrap err = TOX_ERR_BOOTSTRAP_OK
+        cdef bool res = tox_add_tcp_relay(self._get(), host.encode("utf-8"), port, public_key, &err)
         if err:
             raise ApiException(Tox_Err_Bootstrap(err))
         return res
@@ -1195,12 +1214,6 @@ cdef class Tox_Ptr:
         tox_group_disconnect(self._get(), group_number, &err)
         if err:
             raise ApiException(Tox_Err_Group_Disconnect(err))
-
-    def group_reconnect(self, group_number: Tox_Group_Number) -> None:
-        cdef Tox_Err_Group_Reconnect err = TOX_ERR_GROUP_RECONNECT_OK
-        tox_group_reconnect(self._get(), group_number, &err)
-        if err:
-            raise ApiException(Tox_Err_Group_Reconnect(err))
 
     def group_leave(self, group_number: Tox_Group_Number, part_message: bytes) -> None:
         cdef Tox_Err_Group_Leave err = TOX_ERR_GROUP_LEAVE_OK

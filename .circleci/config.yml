@@ -3,9 +3,10 @@ version: 2
 
 workflows:
   version: 2
-  build_linux:
+  circleci:
     jobs:
       - asan
+      - bazel-opt
 
 jobs:
   asan:
@@ -60,3 +61,14 @@ jobs:
           export LD_PRELOAD=libasan.so.8
           export PYTHONPATH=.
           python3 -m unittest $(find test -name "*_test.py")
+
+
+  bazel-opt:
+    working_directory: /tmp/cirrus-ci-build
+    docker:
+      - image: toxchat/toktok-stack:latest-release
+
+    steps:
+      - checkout
+      - run: /src/workspace/tools/inject-repo py_toxcore_c
+      - run: cd /src/workspace && bazel test -k //py_toxcore_c/...

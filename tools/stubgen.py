@@ -1,7 +1,6 @@
 import collections
 import inspect
-import os.path
-import sys
+import os
 
 import pytox.common
 import pytox.toxav.toxav
@@ -37,31 +36,33 @@ def collect_imports(doc: str, imports: set[str], typevars: set[str],
     return doc
 
 
-def process_class(name: str, cls: list[str], imports: set[str],
-                  typevars: set[str], attr: object) -> None:
+def process_class(cls: list[str], imports: set[str], typevars: set[str],
+                  attr: object) -> None:
     for mem in dir(attr):
         mem_attr = getattr(attr, mem)
         if (mem in ("__init__", "__enter__", "__exit__")
                 or "cython_function_or_method" in mem_attr.__class__.__name__):
-            doc = mem_attr.__doc__.split("\n")[0]
+            doc = mem_attr.__doc__
+            if not doc:
+                raise Exception(f"no doc for {mem_attr}")
+            doc = doc.split("\n")[0]
             if " -> " not in doc:
                 doc += " -> None"
             doc = collect_imports(doc, imports, typevars, attr)
             cls.append(f"    def {doc}: ...")
         elif mem_attr.__class__.__name__ == "getset_descriptor":
-            imports.add("from typing import Any")
-            cls.append(f"    {mem}: Any")
+            cls.append(f"    {mem_attr.__doc__}")
         else:
             if mem_attr.__doc__ and mem_attr.__doc__.startswith(mem):
                 raise Exception((mem, mem_attr.__doc__, mem_attr.__class__))
 
 
 def process_type(
-        sym: str,
-        attr: object,
-        imports: set[str],
-        typevars: set[str],
-        classes: dict[str, list[str]],
+    sym: str,
+    attr: object,
+    imports: set[str],
+    typevars: set[str],
+    classes: dict[str, list[str]],
 ) -> None:
     if not isinstance(attr, type):
         return
@@ -83,7 +84,7 @@ def process_type(
     if sym.endswith("Exception") or is_enum:
         cls[0] += " ..."
     else:
-        process_class(sym, cls, imports, typevars, attr)
+        process_class(cls, imports, typevars, attr)
 
 
 def process_value(sym: str, attr: object, consts: list[str],
@@ -98,6 +99,14 @@ def process_value(sym: str, attr: object, consts: list[str],
         consts.append(f"{sym}: str")
     elif isinstance(attr, type):
         pass  # already done above
+    elif "cython_function_or_method" in attr.__class__.__name__:
+        doc = attr.__doc__
+        if not doc:
+            raise Exception(f"no doc for {sym}")
+        doc = doc.split("\n")[0]
+        if " -> " not in doc:
+            doc += " -> None"
+        consts.append(f"def {doc}: ...")
     else:
         raise Exception(f"nope {sym}: {type(attr)}")
 
@@ -108,7 +117,7 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
         attr = getattr(pkg, sym)
         if sym.startswith("__"):
             continue
-        if isinstance(attr, pytox.common.__class__):
+        if isinstance(attr, type(pytox.common)):
             continue
         if hasattr(attr,
                    "__module__") and f"{prefix}.{attr.__module__}" != name:
@@ -116,8 +125,8 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
         attrs.append((sym, attr))
 
     consts: list[str] = []
-    classes: collections.OrderedDict[str, list[str]] = collections.OrderedDict(
-    )
+    classes: collections.OrderedDict[str,
+                                     list[str]] = collections.OrderedDict()
     imports: set[str] = set()
     typevars: set[str] = set()
     missing: set[str] = set()
@@ -156,7 +165,10 @@ def process_package(out_dir: str, pkg: object, prefix: str, name: str) -> None:
 
 
 def main() -> None:
-    out_dir = sys.argv[1]
+    root = os.getenv("BUILD_WORKSPACE_DIRECTORY")
+    if not root:
+        raise Exception("no $BUILD_WORKSPACE_DIRECTORY")
+    out_dir = os.path.join(root, "py_toxcore_c")
     for pkg in PACKAGES:
         if not pkg.__package__:
             raise Exception(f"{pkg} has no __package__")

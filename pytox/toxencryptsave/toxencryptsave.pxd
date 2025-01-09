@@ -2,6 +2,7 @@
 from libcpp cimport bool
 from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int16_t, int32_t, int64_t
 from libc.stdlib cimport malloc, free
+from typing import Optional
 
 cdef extern from "tox/toxencryptsave.h":
     cpdef enum Tox_Err_Key_Derivation:

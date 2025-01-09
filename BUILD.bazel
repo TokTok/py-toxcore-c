@@ -1,3 +1,4 @@
+load("@rules_python//python:defs.bzl", "py_library")
 load("//third_party/python:build_defs.bzl", "mypy_test", "pyx_library")
 load("//tools/project:build_defs.bzl", "project")
 
@@ -31,4 +32,11 @@ mypy_test(
         exclude = ["setup.py"],
     ),
     path = ["py_toxcore_c"],
+)
+
+py_library(
+    name = "py_toxcore_c",
+    srcs = ["__init__.py"],
+    visibility = ["//visibility:public"],
+    deps = [":pytox"],
 )

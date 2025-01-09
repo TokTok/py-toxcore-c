@@ -1,0 +1,43 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+load("//third_party/python:build_defs.bzl", "mypy_test")
+
+py_binary(
+    name = "groupbot",
+    srcs = glob([
+        "*.py",
+        "plugins/*.py",
+    ]),
+    tags = ["no-cross"],
+    deps = [
+        "//py_toxcore_c",
+        "@requests",
+    ],
+)
+
+py_binary(
+    name = "github",
+    srcs = [
+        "api.py",
+        "plugins/github.py",
+    ],
+    main = "plugins/github.py",
+    tags = ["no-cross"],
+    deps = ["//py_toxcore_c"],
+)
+
+mypy_test(
+    name = "mypy_test",
+    srcs = glob([
+        "*.py",
+        "plugins/*.py",
+    ]),
+    path = [
+        "external/typeshed/stubs/requests",
+        "py_toxcore_c",
+    ],
+    tags = ["no-cross"],
+    deps = [
+        "//py_toxcore_c",
+        "@typeshed//:requests",
+    ],
+)

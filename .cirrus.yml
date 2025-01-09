@@ -1,11 +1,11 @@
----
-bazel-opt_task:
-  container:
-    image: toxchat/toktok-stack:latest-release
-    cpu: 2
-    memory: 6G
-  configure_script:
-    - /src/workspace/tools/inject-repo py_toxcore_c
-  test_all_script:
-    - cd /src/workspace && bazel test -k
-        //py_toxcore_c/...
+# ---
+# bazel-opt_task:
+#   container:
+#     image: toxchat/toktok-stack:latest-release
+#     cpu: 2
+#     memory: 6G
+#   configure_script:
+#     - /src/workspace/tools/inject-repo py_toxcore_c
+#   test_all_script:
+#     - cd /src/workspace && bazel test -k
+#         //py_toxcore_c/...

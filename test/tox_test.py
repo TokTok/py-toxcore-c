@@ -6,6 +6,7 @@ from pytox import common
 
 
 class ToxTest(unittest.TestCase):
+
     def test_version(self) -> None:
         self.assertEqual(len(c.VERSION.split(".")), 3)
 
@@ -87,7 +88,8 @@ class ToxTest(unittest.TestCase):
             self.assertEqual(tox.status, c.TOX_USER_STATUS_NONE)
             tox.status = c.TOX_USER_STATUS_AWAY
             self.assertEqual(tox.status, c.TOX_USER_STATUS_AWAY)
-            tox.status = 50  # setting it to an invalid value has no effect
+            # setting it to an invalid value has no effect
+            tox.status = c.Tox_User_Status(50)
             self.assertEqual(tox.status, c.TOX_USER_STATUS_AWAY)
 
     def test_friend_add(self) -> None:

@@ -5,8 +5,13 @@ from pytox import common
 
 
 class ToxOptionsTest(unittest.TestCase):
+
     def test_options(self) -> None:
         opts = c.Tox_Options_Ptr()
+        # This must be set before proxy/savedata.
+        opts.experimental_owned_data = True
+        self.assertTrue(opts.experimental_owned_data)
+
         self.assertTrue(opts.ipv6_enabled)
         opts.ipv6_enabled = False
         self.assertFalse(opts.ipv6_enabled)
@@ -49,11 +54,8 @@ class ToxOptionsTest(unittest.TestCase):
         opts.savedata_type = c.TOX_SAVEDATA_TYPE_TOX_SAVE
         self.assertEqual(opts.savedata_type, c.TOX_SAVEDATA_TYPE_TOX_SAVE)
 
-        # Can't test whether it works, but at least we can test that it doesn't crash.
         opts.savedata_data = b"test"
-        with self.assertRaises(Exception):
-            # not implemented
-            print(opts.savedata_data)
+        self.assertEqual(opts.savedata_data, b"test")
 
         self.assertFalse(opts.experimental_thread_safety)
         opts.experimental_thread_safety = True

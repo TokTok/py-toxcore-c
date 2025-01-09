@@ -2,6 +2,7 @@
 from libcpp cimport bool
 from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int16_t, int32_t, int64_t
 from libc.stdlib cimport malloc, free
+from typing import Optional
 
 cdef extern from "tox/tox.h":
     cpdef enum Tox_Err_Options_New:
@@ -178,6 +179,7 @@ cdef extern from "tox/tox.h":
         TOX_ERR_CONFERENCE_JOIN_DUPLICATE
         TOX_ERR_CONFERENCE_JOIN_INIT_FAIL
         TOX_ERR_CONFERENCE_JOIN_FAIL_SEND
+        TOX_ERR_CONFERENCE_JOIN_NULL
     cpdef enum Tox_Err_Conference_Send_Message:
         TOX_ERR_CONFERENCE_SEND_MESSAGE_OK
         TOX_ERR_CONFERENCE_SEND_MESSAGE_CONFERENCE_NOT_FOUND
@@ -324,6 +326,7 @@ cdef extern from "tox/tox.h":
         TOX_ERR_GROUP_INVITE_ACCEPT_PASSWORD
         TOX_ERR_GROUP_INVITE_ACCEPT_FRIEND_NOT_FOUND
         TOX_ERR_GROUP_INVITE_ACCEPT_FAIL_SEND
+        TOX_ERR_GROUP_INVITE_ACCEPT_NULL
     cpdef enum Tox_Group_Exit_Type:
         TOX_GROUP_EXIT_TYPE_QUIT
         TOX_GROUP_EXIT_TYPE_TIMEOUT
@@ -460,7 +463,7 @@ cdef extern from "tox/tox.h":
     cdef Tox_Proxy_Type tox_options_get_proxy_type(const Tox_Options* self)
     cdef void tox_options_set_proxy_type(Tox_Options* self, Tox_Proxy_Type proxy_type)
     cdef const char* tox_options_get_proxy_host(const Tox_Options* self)
-    cdef void tox_options_set_proxy_host(Tox_Options* self, const char* proxy_host)
+    cdef bool tox_options_set_proxy_host(Tox_Options* self, const char* proxy_host)
     cdef uint16_t tox_options_get_proxy_port(const Tox_Options* self)
     cdef void tox_options_set_proxy_port(Tox_Options* self, uint16_t proxy_port)
     cdef uint16_t tox_options_get_start_port(const Tox_Options* self)
@@ -473,11 +476,17 @@ cdef extern from "tox/tox.h":
     cdef void tox_options_set_hole_punching_enabled(Tox_Options* self, bool hole_punching_enabled)
     cdef Tox_Savedata_Type tox_options_get_savedata_type(const Tox_Options* self)
     cdef void tox_options_set_savedata_type(Tox_Options* self, Tox_Savedata_Type savedata_type)
-    cdef void tox_options_set_savedata_data(Tox_Options* self, const uint8_t* savedata_data, size_t length)
+    cdef size_t tox_options_get_savedata_length(const Tox_Options* self)
+    cdef const uint8_t* tox_options_get_savedata_data(const Tox_Options* self)
+    cdef bool tox_options_set_savedata_data(Tox_Options* self, const uint8_t* savedata_data, size_t length)
+    cdef bool tox_options_get_experimental_owned_data(const Tox_Options* self)
+    cdef void tox_options_set_experimental_owned_data(Tox_Options* self, bool experimental_owned_data)
     cdef bool tox_options_get_experimental_thread_safety(const Tox_Options* self)
     cdef void tox_options_set_experimental_thread_safety(Tox_Options* self, bool experimental_thread_safety)
     cdef bool tox_options_get_experimental_groups_persistence(const Tox_Options* self)
     cdef void tox_options_set_experimental_groups_persistence(Tox_Options* self, bool experimental_groups_persistence)
+    cdef bool tox_options_get_experimental_disable_dns(const Tox_Options* self)
+    cdef void tox_options_set_experimental_disable_dns(Tox_Options* self, bool experimental_disable_dns)
     cdef void tox_options_default(Tox_Options* self)
     cdef Tox_Options* tox_options_new(Tox_Err_Options_New* error)
     cdef void tox_options_free(Tox_Options* tox_options)
@@ -651,7 +660,6 @@ cdef extern from "tox/tox.h":
     cdef Tox_Group_Number tox_group_join(Tox* self, const uint8_t* chat_id, const uint8_t* name, size_t name_length, const uint8_t* password, size_t password_length, Tox_Err_Group_Join* error)
     cdef bool tox_group_is_connected(const Tox* self, Tox_Group_Number group_number, Tox_Err_Group_Is_Connected* error)
     cdef bool tox_group_disconnect(const Tox* self, Tox_Group_Number group_number, Tox_Err_Group_Disconnect* error)
-    cdef bool tox_group_reconnect(Tox* self, Tox_Group_Number group_number, Tox_Err_Group_Reconnect* error)
     cdef bool tox_group_leave(Tox* self, Tox_Group_Number group_number, const uint8_t* part_message, size_t length, Tox_Err_Group_Leave* error)
     cdef void tox_callback_group_topic(Tox* self, tox_group_topic_cb* callback)
     cdef void tox_callback_group_privacy_state(Tox* self, tox_group_privacy_state_cb* callback)

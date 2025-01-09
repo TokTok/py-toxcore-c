@@ -1,0 +1,29 @@
+version: "0.2"
+dictionaryDefinitions: []
+dictionaries: []
+ignoreWords: []
+flagWords: []
+import: []
+ignorePaths:
+  - BUILD.bazel
+  - LICENSE*
+words:
+  - bazel
+  - cdef
+  - chatlist
+  - cython
+  - dgram
+  - getset
+  - groupbot
+  - iphy
+  - iphydf
+  - linetrace
+  - malloc
+  - norequest
+  - nospam
+  - pytox
+  - toktok
+  - toxav
+  - toxcore
+  - toxencryptsave
+  - typevars
