@@ -3,31 +3,53 @@
 import importlib
 import shlex
 import sys
+from dataclasses import dataclass
+from typing import Callable
 from typing import Optional
 
 from py_toxcore_c.tools.groupbot import api
+from py_toxcore_c.tools.groupbot.plugins import echo
 from py_toxcore_c.tools.groupbot.plugins import github
 
 import pytox.toxcore.tox as core
 
 
-def _reload_modules() -> None:
+@dataclass
+class Module:
+    """A groupbot module."""
+
+    prefix: str
+    new: Callable[[api.Config], api.Handler]
+    clone: Callable[[api.HandlerData], api.Handler]
+
+
+def _reload_modules() -> tuple[Module, ...]:
     """Reload the extension modules."""
     for name in tuple(sys.modules.keys()):
         if name.startswith("py_toxcore_c.tools.groupbot.plugins."):
             importlib.reload(sys.modules[name])
 
+    return (
+        Module("echo", echo.Echo.new, echo.Echo.clone),
+        Module("gh", github.GitHub.new, github.GitHub.clone),
+    )
+
 
 class Commands:
-    _gh: github.GitHub
+    _handlers: dict[str, api.Handler]
 
     def __init__(self, config: api.Config) -> None:
-        self._gh = github.GitHub(config.github_path)
+        self._handlers = {
+            mod.prefix: mod.new(config)
+            for mod in _reload_modules()
+        }
 
     def _reload(self) -> None:
         """Reload the extension modules."""
-        _reload_modules()
-        self._gh = github.GitHub(self._gh.path)
+        self._handlers = {
+            mod.prefix: mod.clone(self._handlers[mod.prefix].data())
+            for mod in _reload_modules()
+        }
 
     def handle(
         self,
@@ -44,19 +66,14 @@ class Commands:
         if not command:
             return None
         try:
-            fun = self._dispatch(command[0])
-            if fun:
-                return fun(bot, friend_pk, message_type, tuple(command[1:]))
+            return self._dispatch(command[0])(bot, friend_pk, message_type,
+                                              tuple(command[1:]))
         except Exception as e:
             return api.Reply(f"Error: {e}")
         return None
 
-    def _dispatch(self, command: str) -> Optional[api.CommandFunction]:
+    def _dispatch(self, command: str) -> api.CommandFunction:
         """Dispatch a command."""
-        if command == "echo":
-            return self.echo
-        if command == "gh":
-            return self.gh
         if command == "leave":
             return self.leave
         if command == "nick":
@@ -65,27 +82,19 @@ class Commands:
             return self.reload
         if command == "save":
             return self.save
-        return None
+        if command in self._handlers:
+            return self._handlers[command].handle
+        return self.null
 
-    def echo(
-        self,
-        bot: api.GroupBot,
-        friend_pk: bytes,
-        message_type: core.Tox_Message_Type,
-        message: tuple[str, ...],
-    ) -> Optional[api.Reply]:
-        """Echo a message."""
-        return api.Reply(str(list(message)))
-
-    def gh(
+    def null(
         self,
         bot: api.GroupBot,
         friend_pk: bytes,
         message_type: core.Tox_Message_Type,
         params: tuple[str, ...],
     ) -> Optional[api.Reply]:
-        """Provide access to GitHub issue/PR information."""
-        return self._gh.handle(bot, friend_pk, message_type, params)
+        """Null command."""
+        return None
 
     @api.admin
     def leave(

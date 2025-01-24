@@ -110,7 +110,7 @@ class GroupBot(api.GroupBot):
     ) -> None:
         print("Group message:", group_number, peer_id, message_type.name,
               message.decode())
-        peer = self.group_peer_get_name(group_number, peer_id)
+        peer = self.group_peer_get_name(group_number, peer_id).decode()
         if not self.conference_chatlist:
             return
         if message.startswith(b"~"):
@@ -125,13 +125,12 @@ class GroupBot(api.GroupBot):
             if reply:
                 self.group_send_message(
                     group_number,
-                    core.TOX_MESSAGE_TYPE_NORMAL,
-                    f"{peer.decode()}: {reply.text}".encode(),
+                    reply.message_type,
+                    f"{peer}: {reply.text}".encode(),
                 )
         else:
             self.conference_send_message(
-                0, message_type,
-                f"<{peer.decode()}> {message.decode()}".encode())
+                0, message_type, f"<{peer}> {message.decode()}".encode())
 
     def handle_conference_message(
         self,
@@ -164,7 +163,7 @@ class GroupBot(api.GroupBot):
             if reply:
                 self.conference_send_message(
                     conference_number,
-                    core.TOX_MESSAGE_TYPE_NORMAL,
+                    reply.message_type,
                     f"{peer}: {reply.text}".encode(),
                 )
         else:

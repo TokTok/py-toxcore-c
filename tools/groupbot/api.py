@@ -109,6 +109,7 @@ class GroupBot(core.Tox_Ptr):
 @dataclass
 class Reply:
     text: str
+    message_type: core.Tox_Message_Type = core.TOX_MESSAGE_TYPE_NORMAL
 
 
 T = TypeVar("T")
@@ -135,3 +136,30 @@ def admin(func: CommandMethod[T]) -> CommandMethod[T]:
         return func(self, bot, friend_pk, message_type, params)
 
     return wrapper
+
+
+@dataclass
+class HandlerData:
+    """Serializable handler data."""
+
+    data: dict[str, str]
+
+    def __init__(self, **data: str) -> None:
+        self.data = data
+
+
+class Handler:
+
+    def handle(
+        self,
+        bot: GroupBot,
+        friend_pk: bytes,
+        message_type: core.Tox_Message_Type,
+        message: tuple[str, ...],
+    ) -> Optional[Reply]:
+        """Handle a Tox message."""
+        raise NotImplementedError
+
+    def data(self) -> HandlerData:
+        """Get the handler data usable to clone a handler."""
+        return HandlerData()

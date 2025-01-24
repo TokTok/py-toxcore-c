@@ -77,11 +77,19 @@ class Issue:
     title: str
     state: str
     user: User
-    is_pull_request: bool
 
     @property
     def repo(self) -> str:
         return self.path.repo.name
+
+    @property
+    def is_pull_request(self) -> bool:
+        return self.path.is_pull_request
+
+    @property
+    def emoji(self) -> str:
+        """Get an emoji to distinguish between issue and PR."""
+        return "🎁" if self.is_pull_request else "🐛"
 
     @staticmethod
     def fromJSON(path: IssuePath, issue: dict[str, Any]) -> "Issue":
@@ -91,13 +99,28 @@ class Issue:
             title=str(issue["title"]),
             state=str(issue["state"]),
             user=User.fromJSON(issue["user"]),
-            is_pull_request=bool(issue.get("pull_request")),
         )
 
 
 @dataclass
-class GitHub:
+class GitHub(api.Handler):
     path: str
+
+    @staticmethod
+    def new(config: api.Config) -> "GitHub":
+        """Create a GitHub instance from a configuration."""
+        return GitHub(config.github_path)
+
+    @staticmethod
+    def clone(data: api.HandlerData) -> "GitHub":
+        """Clone a GitHub instance."""
+        if "path" not in data.data:
+            raise ValueError("Missing path in HandlerData")
+        return GitHub(data.data["path"])
+
+    def data(self) -> api.HandlerData:
+        """Get the module data."""
+        return api.HandlerData(path=self.path)
 
     def __hash__(self) -> int:
         return hash(self.path)
@@ -127,6 +150,38 @@ class GitHub:
 
         return None
 
+    def _find_issue(
+            self, repo_name: Optional[str],
+            issue_number: int) -> tuple[Optional[str], Optional[Issue]]:
+        """Find an issue/PR by number."""
+        candidates: list[Issue] = []
+        repos = (self.repos() if repo_name is None else [
+            repo for repo in self.repos()
+            if repo.name.lower().startswith(repo_name.lower())
+        ])
+        if not repos:
+            return None, None
+        for repo in repos:
+            for issue_path in self.issues(repo):
+                if issue_path.number == issue_number:
+                    candidates.append(self.load_issue(issue_path))
+
+        if len(repos) == 1:
+            repo_name = repos[0].name
+        repo_name = repo_name or "any repository"
+
+        # If any issues were found, return the first one that's open. If none
+        # are open, return the first one.
+        issue: Optional[Issue] = None
+        for candidate in candidates:
+            if candidate.state == "open":
+                issue = candidate
+                break
+        else:
+            issue = candidates[0] if candidates else None
+
+        return repo_name, issue
+
     def handle_issue(self, repo_name: Optional[str],
                      issue_id: str) -> api.Reply:
         """Handle an issue/PR number."""
@@ -135,35 +190,15 @@ class GitHub:
         except ValueError:
             return api.Reply(f"Error: {issue_id} is not a valid issue number")
 
-        issues: list[Issue] = []
-        repos = (self.repos() if repo_name is None else [
-            repo for repo in self.repos()
-            if repo.name.lower() == repo_name.lower()
-        ])
-        if not repos:
+        found_repo, issue = self._find_issue(repo_name, issue_number)
+        if not found_repo:
             return api.Reply(f"Error: Repository {repo_name} not found")
-        for repo in repos:
-            for issue_path in self.issues(repo):
-                if issue_path.number == issue_number:
-                    issues.append(self.load_issue(issue_path))
-
-        repo_name = repo_name or "any repository"
-
-        # If any issues were found, return the first one that's open. If none
-        # are open, return the first one.
-        issue: Optional[Issue] = None
-        for candidate in issues:
-            if candidate.state == "open":
-                break
-        else:
-            issue = issues[0] if issues else None
-        if issue:
+        if not issue:
             return api.Reply(
-                f"{issue.title} by {issue.user.login} ({issue.repo}#{issue.number}, {issue.state})"
-            )
+                f"Error: Issue {issue_number} not found in {found_repo}")
 
-        return api.Reply(
-            f"Error: Issue {issue_number} not found in {repo_name}")
+        return api.Reply(f"{issue.emoji} {issue.title} by {issue.user.login} "
+                         f"({issue.repo}#{issue.number}, {issue.state})")
 
     @memoize
     def load_issue(self, issue: IssuePath) -> Issue:
