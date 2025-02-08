@@ -37,6 +37,7 @@ mypy_test(
 py_library(
     name = "py_toxcore_c",
     srcs = ["__init__.py"],
+    tags = ["no-cross"],
     visibility = ["//visibility:public"],
     deps = [":pytox"],
 )
