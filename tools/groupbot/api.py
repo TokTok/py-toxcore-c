@@ -71,7 +71,7 @@ def parse_args() -> Config:
         default=(os.path.join(
             BUILD_WORKSPACE_DIRECTORY,
             "tools",
-            "toktok-backup",
+            "backup",
         ) if BUILD_WORKSPACE_DIRECTORY is not None else None),
     )
     return Config(**vars(parser.parse_args()))
