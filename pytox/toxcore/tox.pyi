@@ -100,7 +100,7 @@ class Tox_Options_Ptr:
     proxy_host: str
     proxy_port: int
     proxy_type: Tox_Proxy_Type
-    savedata_data: bytes
+    savedata: bytes
     savedata_type: Tox_Savedata_Type
     start_port: int
     tcp_port: int
