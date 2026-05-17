@@ -47,7 +47,7 @@ class GroupBot(api.GroupBot):
             options.proxy_port = 9050
             options.proxy_type = core.TOX_PROXY_TYPE_SOCKS5
             if data:
-                options.savedata_data = data
+                options.savedata = data
                 options.savedata_type = core.TOX_SAVEDATA_TYPE_TOX_SAVE
             super().__init__(config, options)
 

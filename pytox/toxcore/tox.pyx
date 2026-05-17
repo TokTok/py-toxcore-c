@@ -320,12 +320,20 @@ cdef class Tox_Options_Ptr:
         tox_options_set_savedata_type(self._get(), savedata_type)
 
     @property
-    def savedata_data(self) -> bytes:
-        return tox_options_get_savedata_data(self._get())[:tox_options_get_savedata_length(self._get())]
+    def savedata(self) -> bytes:
+        cdef size_t size = tox_options_get_savedata_size(self._get())
+        cdef uint8_t* data = <uint8_t*> malloc(size)
+        if data is NULL:
+            raise MemoryError()
+        try:
+            tox_options_get_savedata(self._get(), data)
+            return bytes(data[:size])
+        finally:
+            free(data)
 
-    @savedata_data.setter
-    def savedata_data(self, savedata_data: bytes):
-        tox_options_set_savedata_data(self._get(), savedata_data, len(savedata_data))
+    @savedata.setter
+    def savedata(self, savedata: bytes):
+        tox_options_set_savedata(self._get(), savedata, len(savedata))
 
     @property
     def experimental_owned_data(self) -> bool:
@@ -475,6 +483,8 @@ cdef class Tox_Ptr:
     def savedata(self) -> bytes:
         cdef size_t size = tox_get_savedata_size(self._get())
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_get_savedata(self._get(), data)
             return data[:size]
@@ -508,6 +518,8 @@ cdef class Tox_Ptr:
     def address(self) -> bytes:
         cdef size_t size = tox_address_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_self_get_address(self._get(), data)
             return data[:size]
@@ -518,6 +530,8 @@ cdef class Tox_Ptr:
     def public_key(self) -> bytes:
         cdef size_t size = tox_public_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_self_get_public_key(self._get(), data)
             return data[:tox_public_key_size()]
@@ -528,6 +542,8 @@ cdef class Tox_Ptr:
     def dht_id(self) -> bytes:
         cdef size_t size = tox_public_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_self_get_dht_id(self._get(), data)
             return data[:tox_public_key_size()]
@@ -554,6 +570,8 @@ cdef class Tox_Ptr:
     def secret_key(self) -> bytes:
         cdef size_t size = tox_secret_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_self_get_secret_key(self._get(), data)
             return data[:tox_secret_key_size()]
@@ -564,6 +582,8 @@ cdef class Tox_Ptr:
     def name(self) -> bytes:
         cdef size_t size = tox_self_get_name_size(self._get())
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_self_get_name(self._get(), data)
             return data[:size]
@@ -581,6 +601,8 @@ cdef class Tox_Ptr:
     def status_message(self) -> bytes:
         cdef size_t size = tox_self_get_status_message_size(self._get())
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_self_get_status_message(self._get(), data)
             return data[:size]
@@ -631,6 +653,8 @@ cdef class Tox_Ptr:
     def friend_list(self) -> list[Tox_Friend_Number]:
         cdef size_t size = tox_self_get_friend_list_size(self._get())
         cdef Tox_Friend_Number *data = <Tox_Friend_Number*> malloc(size * sizeof(Tox_Friend_Number))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_self_get_friend_list(self._get(), data)
             return [data[i] for i in range(size)]
@@ -640,6 +664,8 @@ cdef class Tox_Ptr:
     def friend_get_public_key(self, friend_number: Tox_Friend_Number) -> bytes:
         cdef size_t size = tox_public_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         cdef Tox_Err_Friend_Get_Public_Key err = TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK
         try:
             tox_friend_get_public_key(self._get(), friend_number, data, &err)
@@ -662,6 +688,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Friend_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_friend_get_status_message(self._get(), friend_number, data, &err)
             if err:
@@ -676,6 +704,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Friend_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_friend_get_name(self._get(), friend_number, data, &err)
             if err:
@@ -734,6 +764,8 @@ cdef class Tox_Ptr:
         cdef Tox_Err_File_Get err = TOX_ERR_FILE_GET_OK
         cdef size_t size = tox_file_id_length()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_file_get_file_id(self._get(), friend_number, file_number, data, &err)
             if err:
@@ -806,6 +838,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Conference_Title(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_conference_get_title(self._get(), conference_number, data, &err)
             if err:
@@ -846,6 +880,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Conference_Peer_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_conference_peer_get_name(self._get(), conference_number, peer_number, data, &err)
             if err:
@@ -860,6 +896,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Conference_Peer_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_conference_offline_peer_get_name(self._get(), conference_number, offline_peer_number, data, &err)
             if err:
@@ -872,6 +910,8 @@ cdef class Tox_Ptr:
         cdef Tox_Err_Conference_Peer_Query err = TOX_ERR_CONFERENCE_PEER_QUERY_OK
         cdef size_t size = tox_public_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_conference_peer_get_public_key(self._get(), conference_number, peer_number, data, &err)
             if err:
@@ -884,6 +924,8 @@ cdef class Tox_Ptr:
         cdef Tox_Err_Conference_Peer_Query err = TOX_ERR_CONFERENCE_PEER_QUERY_OK
         cdef size_t size = tox_public_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_conference_offline_peer_get_public_key(self._get(), conference_number, offline_peer_number, data, &err)
             if err:
@@ -910,6 +952,8 @@ cdef class Tox_Ptr:
     def conference_chatlist(self) -> list[Tox_Conference_Number]:
         cdef size_t size = tox_conference_get_chatlist_size(self._get())
         cdef Tox_Conference_Number *data = <Tox_Conference_Number*> malloc(size * sizeof(Tox_Conference_Number))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_conference_get_chatlist(self._get(), data)
             return [data[i] for i in range(size)]
@@ -919,6 +963,8 @@ cdef class Tox_Ptr:
     def conference_get_id(self, conference_number: Tox_Conference_Number) -> bytes:
         cdef size_t size = tox_conference_id_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             if not tox_conference_get_id(self._get(), conference_number, data):
                 raise ApiException(0)  # TODO(iphydf): There's no error enum for this. Make one.
@@ -947,6 +993,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Group_Self_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_group_self_get_name(self._get(), group_number, data, &err)
             if err:
@@ -992,6 +1040,8 @@ cdef class Tox_Ptr:
         cdef Tox_Err_Group_Self_Query err = TOX_ERR_GROUP_SELF_QUERY_OK
         cdef size_t size = tox_public_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_group_self_get_public_key(self._get(), group_number, data, &err)
             if err:
@@ -1006,6 +1056,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Group_Peer_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_group_peer_get_name(self._get(), group_number, peer_id, data, &err)
             if err:
@@ -1045,6 +1097,8 @@ cdef class Tox_Ptr:
         cdef Tox_Err_Group_Peer_Query err = TOX_ERR_GROUP_PEER_QUERY_OK
         cdef size_t size = tox_public_key_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_group_peer_get_public_key(self._get(), group_number, peer_id, data, &err)
             if err:
@@ -1059,6 +1113,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Group_State_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_group_get_topic(self._get(), group_number, data, &err)
             if err:
@@ -1079,6 +1135,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Group_State_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_group_get_name(self._get(), group_number, data, &err)
             if err:
@@ -1091,6 +1149,8 @@ cdef class Tox_Ptr:
         cdef Tox_Err_Group_State_Query err = TOX_ERR_GROUP_STATE_QUERY_OK
         cdef size_t size = tox_group_chat_id_size()
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_group_get_chat_id(self._get(), group_number, data, &err)
             if err:
@@ -1160,6 +1220,8 @@ cdef class Tox_Ptr:
         if err:
             raise ApiException(Tox_Err_Group_State_Query(err))
         cdef uint8_t *data = <uint8_t*> malloc(size * sizeof(uint8_t))
+        if data is NULL:
+            raise MemoryError()
         try:
             tox_group_get_password(self._get(), group_number, data, &err)
             if err:

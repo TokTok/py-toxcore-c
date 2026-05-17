@@ -8,6 +8,8 @@ information without making any GitHub API calls.
 """
 import json
 import os
+import subprocess  # nosec
+import time
 from dataclasses import dataclass
 from functools import cache as memoize
 from typing import Any
@@ -105,6 +107,7 @@ class Issue:
 @dataclass
 class GitHub(api.Handler):
     path: str
+    last_update: float = 0
 
     @staticmethod
     def new(config: api.Config) -> "GitHub":
@@ -147,6 +150,8 @@ class GitHub(api.Handler):
         if len(message) == 1 and "#" in message[0]:
             repo_name, issue_id = message[0].split("#", 1)
             return self.handle_issue(repo_name, issue_id)
+        if len(message) == 1 and message[0] == "update":
+            return self.handle_update()
 
         return None
 
@@ -200,6 +205,25 @@ class GitHub(api.Handler):
         return api.Reply(f"{issue.emoji} {issue.title} by {issue.user.login} "
                          f"({issue.repo}#{issue.number}, {issue.state})")
 
+    def handle_update(self) -> api.Reply:
+        """Pull the backup directory."""
+        if time.time() - self.last_update < 60:
+            return api.Reply("Not updating yet, try again later")
+        self.last_update = time.time()
+        output = subprocess.run(  # nosec
+            ["git", "pull", "--rebase"],
+            cwd=self.path,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        ).stdout.decode().split("\n")[0]
+        self._clear_cache()
+        return api.Reply(output)
+
+    def _clear_cache(self) -> None:
+        """Clear the memoization cache."""
+        for func in (self.load_issue, self.issues, self.repos):
+            func.cache_clear()
+
     @memoize
     def load_issue(self, issue: IssuePath) -> Issue:
         """Get the issue/PR information."""
@@ -220,22 +244,24 @@ class GitHub(api.Handler):
         issues: list[IssuePath] = []
 
         issues_path = os.path.join(repo.path, "issues")
-        issues.extend(
-            IssuePath(
-                os.path.join(issues_path, issue),
-                repo,
-                int(issue.removesuffix(".json")),
-                is_pull_request=False,
-            ) for issue in os.listdir(issues_path))
+        if os.path.exists(issues_path):
+            issues.extend(
+                IssuePath(
+                    os.path.join(issues_path, issue),
+                    repo,
+                    int(issue.removesuffix(".json")),
+                    is_pull_request=False,
+                ) for issue in os.listdir(issues_path))
 
         pulls_path = os.path.join(repo.path, "pulls")
-        issues.extend(
-            IssuePath(
-                os.path.join(pulls_path, issue),
-                repo,
-                int(issue.removesuffix(".json")),
-                is_pull_request=True,
-            ) for issue in os.listdir(pulls_path))
+        if os.path.exists(pulls_path):
+            issues.extend(
+                IssuePath(
+                    os.path.join(pulls_path, issue),
+                    repo,
+                    int(issue.removesuffix(".json")),
+                    is_pull_request=True,
+                ) for issue in os.listdir(pulls_path))
 
         return sorted(issues)
 
@@ -247,8 +273,7 @@ if __name__ == "__main__":
         api.BUILD_WORKSPACE_DIRECTORY = os.path.abspath(
             os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-    github_path = os.path.join(api.BUILD_WORKSPACE_DIRECTORY, "tools",
-                               "toktok-backup")
+    github_path = os.path.join(api.BUILD_WORKSPACE_DIRECTORY, "tools", "backup")
 
     gh = GitHub(github_path)
     reply = gh.handle_cli(tuple(sys.argv[1:]))
