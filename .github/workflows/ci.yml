@@ -8,60 +8,60 @@ jobs:
   common:
     uses: TokTok/ci-tools/.github/workflows/common-ci.yml@master
 
-# build:
-#   name: python-${{ matrix.version }}
-#   runs-on: ubuntu-latest
-#
-#   strategy:
-#     matrix:
-#       include:
-#       - version: "2.7"
-#       - version: "3.5"
-#       - version: "3.6"
-#       - version: "3.8"
-#       - version: "3.9"
-#       - version: "3.10"
-#
-#   steps:
-#   - uses: actions/checkout@v4
-#   - uses: actions/setup-python@v2
-#     with:
-#       python-version: ${{ matrix.version }}
-#   - name: Install
-#     run: |
-#       sudo apt update
-#       sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
-#   - name: Build
-#     run: python setup.py build_ext --inplace
-#   - name: Test
-#     run: PYTHONPATH=. python tests/tests.py
-#
-# coverage:
-#   name: python-3.7-coverage
-#   runs-on: ubuntu-latest
-#
-#   steps:
-#   - uses: actions/checkout@v4
-#   - uses: actions/setup-python@v2
-#     with:
-#       python-version: "3.7"
-#   - name: Install
-#     run: |
-#       sudo apt update
-#       sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
-#   - name: Build
-#     run: |
-#       export CFLAGS="-fprofile-arcs -ftest-coverage"
-#       python setup.py build_ext --inplace
-#   - name: Test
-#     run: PYTHONPATH=. python tests/tests.py
-#   - name: Upload coverage
-#     run: bash <(curl -s https://codecov.io/bash)
+  # build:
+  #   name: python-${{ matrix.version }}
+  #   runs-on: ubuntu-latest
+  #
+  #   strategy:
+  #     matrix:
+  #       include:
+  #       - version: "2.7"
+  #       - version: "3.5"
+  #       - version: "3.6"
+  #       - version: "3.8"
+  #       - version: "3.9"
+  #       - version: "3.10"
+  #
+  #   steps:
+  #   - uses: actions/checkout@v7
+  #   - uses: actions/setup-python@v7
+  #     with:
+  #       python-version: ${{ matrix.version }}
+  #   - name: Install
+  #     run: |
+  #       sudo apt update
+  #       sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
+  #   - name: Build
+  #     run: python setup.py build_ext --inplace
+  #   - name: Test
+  #     run: PYTHONPATH=. python tests/tests.py
+  #
+  # coverage:
+  #   name: python-3.7-coverage
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #   - uses: actions/checkout@v7
+  #   - uses: actions/setup-python@v7
+  #     with:
+  #       python-version: "3.7"
+  #   - name: Install
+  #     run: |
+  #       sudo apt update
+  #       sudo apt install -y --no-install-recommends --no-install-suggests libtoxcore-dev
+  #   - name: Build
+  #     run: |
+  #       export CFLAGS="-fprofile-arcs -ftest-coverage"
+  #       python setup.py build_ext --inplace
+  #   - name: Test
+  #     run: PYTHONPATH=. python tests/tests.py
+  #   - name: Upload coverage
+  #     run: bash <(curl -s https://codecov.io/bash)
 
   docker:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: docker build -t pytox .
+      - uses: actions/checkout@v7
+      - name: Build
+        run: docker build -t pytox .
